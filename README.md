@@ -13,3 +13,8 @@ In the project, we are using the following libraries:
 - requests
 - bs4 (BeautifulSoup)
 - json
+
+Use the following command to install the required package.
+
+`pip install -r requirements.txt`.
+
