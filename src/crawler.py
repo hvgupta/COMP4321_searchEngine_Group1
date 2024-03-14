@@ -1,7 +1,9 @@
+import numpy as np
+
 import urllib.request
 from bs4 import BeautifulSoup
 import requests 
-import sqlite3 as sql
+import sqlite3
 import nltk
 import json
 import re
