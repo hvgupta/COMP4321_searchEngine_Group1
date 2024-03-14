@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import urllib.request
 from bs4 import BeautifulSoup
 import requests 
@@ -10,6 +8,7 @@ import re
 import queue
 from collections import deque
 import datetime
+import dateutil.parser
 
 
 class Crawler:

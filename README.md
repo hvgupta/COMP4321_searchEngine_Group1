@@ -6,3 +6,4 @@ Use the following command to install the required package.
 
 `pip install -r requirements.txt`.
 
+![Kenneth](Kenneth.jpg)
