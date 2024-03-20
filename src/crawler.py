@@ -4,6 +4,9 @@ import urllib.request
 import urllib.parse
 from urllib.parse import urljoin, urlparse
 from typing import Tuple
+import asyncio
+from zlib import crc32
+
 
 from bs4 import BeautifulSoup as bsoup
 import requests
@@ -14,7 +17,15 @@ import dateutil.parser
 from requests import Response
 
 
-def get_soup(url: str) -> bsoup:
+''' Check the validity of URL, fix the URL if necessary. Get the content of the URL.
+
+Args:
+    url (str): The URL that we want to get soup from
+
+Returns:
+    tuple: return back the fixed URL, and also the bsoup object of the fetched URL
+'''
+def get_soup(url: str) -> tuple[str, bsoup]:
     if "https://" not in url and "http://" not in url:
         newURL = "http://" + url
     else:
@@ -36,23 +47,78 @@ def get_soup(url: str) -> bsoup:
     response = request.text
     soup = bsoup(response, "html.parser")
 
-    return soup
+    return newURL, soup
 
 
-def get_subpage_url(url: str) -> list:
+''' Get all the URLs of the page.
+
+Args:
+    url (str): The url of the page
+    soup (bsoup): The soup object of the page
+
+Returns:
+    list: list of all URLs of the page
+'''
+def get_subpage_url(url:str, soup: bsoup) -> list:
     all_url = []
-    asoup = get_soup(url)
+    asoup = soup
     for anchor in asoup.findAll("a", href=True):
         href = anchor['href']
         if href != " " or href is not None:
-            href = (urljoin(url, href))
+            href = urlparse(urljoin(url, href))
+            href = (href.scheme + "://" + href.netloc + href.path)
             all_url.append(href)
     print(all_url)
     return all_url
 
 
-def recursively_crawl(num_pages: int, url: str):
-    pass
+''' Get the info of the pages, including titles, page_ids, ...
+
+Args:
+    url (str): The url of the page
+    soup (bsoup): The soup object of the page
+
+Returns:
+    list: list of all required data.
+'''
+def get_info_from_page(url, soup:bsoup) -> dict:
+    info = {}
+    title = soup.title.get_text()
+    print(title)
+    last_modif = soup.find("meta")
+    print(last_modif)
+    
+    page_id = crc32(url)
+
+
+''' Insert data into the database.
+
+Args:
+    data (tuple): tuples of all necessary data
+'''
+def add_data_into_database(title: str, url: str, page_id: int, ):
+    connection = sqlite3.connect('mydatabase.db')
+    cursor = connection.cursor()
+
+
+
+
+''' Insert data into the database.
+
+Args:
+    num_pages (int): Number of pages to be crawled
+    url (str): The url of the page
+    url_array: For recursion use only. Must not pass anything into it
+
+Returns:
+    None
+'''
+def recursively_crawl(num_pages: int, url: str, url_array = []):
+    while num_pages > 0:
+        return
+    return
+
+    
 
 
 def main():
@@ -71,10 +137,6 @@ def main():
 
     # - The URL that the program will be crawled -
     url = args.url
-
-    get_subpage_url(url)
-
-    recursively_crawl(num_pages, url)
 
 
 if __name__ == '__main__':
