@@ -1,9 +1,6 @@
-import argparse
 from socket import gaierror
 import urllib.request
-import urllib.parse
 from urllib.parse import urljoin, urlparse
-from typing import Tuple
 import asyncio
 from zlib import crc32
 import pydoc
@@ -11,26 +8,18 @@ import pydoc
 from bs4 import BeautifulSoup as bsoup
 import requests
 import sqlite3
-import re
 import datetime
 import dateutil.parser
-from requests import Response
+import json
 
-
-def parse_url(url: str) -> str:
-    # If the beginning does not contains http:/, then we shall add one. 
-    if "https://" not in url and "http://" not in url:
-        new_url = "http://" + url
-    else:
-        new_url = url
-
-    return new_url
+import indexer
 
 
 def get_soup(url: str) -> bsoup:
-    url = parse_url(url)
+    if "https://" not in url and "http://" not in url:
+        url = "https://" + url
 
-    # Try to get the data. If failed, then the program terminates. 
+    # Try to get the data. If failed, then the program terminates.
     try:
         request = requests.get(url)
         statCode = request.status_code
@@ -42,12 +31,12 @@ def get_soup(url: str) -> bsoup:
 
     # Check if the request is successful or not.
     # If not then we assume the website is invalid, or the server is not responding.
-    if statCode != None:
+    if statCode is not -1:
         if statCode not in range(200, 399):
             print("Error code " + str(statCode) + ". Please check your input and try again.")
             exit(255)
     else:
-        print("Page crawling error! Cannot handle the request of the page " + newURL + ". Skipping.")
+        print("Page crawling error! Skipping")
 
     response = request.text
     soup = bsoup(response, "html.parser")
@@ -55,13 +44,13 @@ def get_soup(url: str) -> bsoup:
     return soup
 
 
-def get_subpage_url(url: str, soup: bsoup) -> list:
-    if soup == None:
+def get_sub_link(url, soup):
+    if soup is None:
         return []
 
     all_url = []
 
-    # Search for all tags with 'a'. 
+    # Search for all tags with 'a'.
     for anchor in soup.findAll("a", href=True):
 
         # Obtain the link
@@ -70,7 +59,7 @@ def get_subpage_url(url: str, soup: bsoup) -> list:
         # If the link obtained is not blank
         if href != " " or href is not None:
 
-            # Parse the url, so that we can get a better formatted url 
+            # Parse the url, so that we can get a better formatted url
             href = urlparse(urljoin(url, href))
             href = (href.scheme + "://" + href.netloc + href.path)
 
@@ -84,71 +73,30 @@ def get_subpage_url(url: str, soup: bsoup) -> list:
     return all_url
 
 
-def get_info_from_page(url, soup: bsoup, parent_url=None) -> list:
-    if soup == None:
-        return []
-
-    info = []
+def get_info(cur_url, soup, parent_url=None):
+    if soup is None:
+        return tuple()
 
     title = soup.title.get_text()
 
-    print(title)
-    last_modif = soup.find("meta")
-    print(last_modif)
-    page_id = crc32(url)
-    parent_page_id = crc32(parent_url)
+    cur_url_parsed = urlparse(cur_url)
+    cur_url_parsed = (cur_url_parsed.scheme + "://" + cur_url_parsed.netloc + cur_url_parsed.path)
+
+    page_id = crc32(cur_url_parsed)
+
+    last_modif = soup.find("meta", attrs={"http-equiv": "last-modified"})
+    if last_modif is None:  # Find the date of the website
+        last_modif = soup.find("meta", attrs={"name": "date"})
+
+    size = soup.find("meta", attrs={"name": "size"})
+    if size is None:
+        size = len(soup.find("body").text)
 
 
-def extractWords(soup: bsoup):
-    if soup == None:
-        return []
-
-    return soup.find("body").text.strip().split()
-
-
-def add_data_into_database(data: list):
-    ''' Insert data into the database.
-
-    Args:
-        data (tuple): tuples of all necessary data
-    '''
-    connection = sqlite3.connect('mydatabase.db')
-    cursor = connection.cursor()
+def insert_data_into_database(data: list):
+    pass
 
 
 def recursively_crawl(num_pages: int, url: str):
-    queue = []
-
-    queue.append(url)
-
-    while num_pages > 0:
-        for count in range(len(queue)):
-            current_url = queue.pop(0)
-
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("-n", "--num_pages", dest="num_pages", default="30",
-                        help="Number of pages that will be crawled / indexed")
-    parser.add_argument("-u", "--url", dest="url", default="https://comp4321-hkust.github.io/testpages/testpage.htm",
-                        help="The URL that the program will be crawled")
-
-    args = parser.parse_args()
-
-    # Simply replace them with your own URL if you find passing flags into program is complicated.
-    # - Number of pages that will be crawled / indexed -
-    num_pages = args.num_pages
-
-    # - The URL that the program will be crawled -
-    url = args.url
-
-    url, soup = get_soup(url)
-
-    subpage_urls = {url: get_subpage_url(url, soup)}  # Dict: parent link: child link
-
-    print(subpage_urls)
-
-
-if __name__ == '__main__':
-    main()
+    pass
+# Proposed: Using CRC32 to convert word into integer, and then use it as the primary key.

@@ -1,7 +1,7 @@
 from nltk.stem import PorterStemmer as Stemmer
 import re
 from bs4 import BeautifulSoup as bsoup
-import crawler1
+import crawler
 
 # Remove all punctuations that are not letters.
 regex = re.compile('[^a-zA-Z]')
