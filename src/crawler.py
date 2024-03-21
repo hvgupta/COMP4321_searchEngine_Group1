@@ -16,6 +16,7 @@ import datetime
 import dateutil.parser
 from requests import Response
 
+
 def parse_url(url: str) -> str:
     # If the beginning does not contains http:/, then we shall add one. 
     if "https://" not in url and "http://" not in url:
@@ -26,8 +27,7 @@ def parse_url(url: str) -> str:
     return new_url
 
 
-def get_soup(url: str) -> tuple[str, bsoup]:
-    
+def get_soup(url: str) -> bsoup:
     url = parse_url(url)
 
     # Try to get the data. If failed, then the program terminates. 
@@ -35,6 +35,8 @@ def get_soup(url: str) -> tuple[str, bsoup]:
         request = requests.get(url)
         statCode = request.status_code
     except gaierror:
+        statCode = -1
+        request = None
         print("Page crawling error! Skipping")
         pass
 
@@ -53,11 +55,10 @@ def get_soup(url: str) -> tuple[str, bsoup]:
     return soup
 
 
-def get_subpage_url(url:str, soup: bsoup) -> list:
-
+def get_subpage_url(url: str, soup: bsoup) -> list:
     if soup == None:
         return []
-    
+
     all_url = []
 
     # Search for all tags with 'a'. 
@@ -83,20 +84,20 @@ def get_subpage_url(url:str, soup: bsoup) -> list:
     return all_url
 
 
-def get_info_from_page(url, soup:bsoup, parent_url = None) -> list:
-
+def get_info_from_page(url, soup: bsoup, parent_url=None) -> list:
     if soup == None:
         return []
 
     info = []
 
     title = soup.title.get_text()
-    
+
     print(title)
     last_modif = soup.find("meta")
     print(last_modif)
     page_id = crc32(url)
     parent_page_id = crc32(parent_url)
+
 
 def extractWords(soup: bsoup):
     if soup == None:
@@ -115,7 +116,6 @@ def add_data_into_database(data: list):
     cursor = connection.cursor()
 
 
-
 def recursively_crawl(num_pages: int, url: str):
     queue = []
 
@@ -124,7 +124,6 @@ def recursively_crawl(num_pages: int, url: str):
     while num_pages > 0:
         for count in range(len(queue)):
             current_url = queue.pop(0)
-
 
 
 def main():
@@ -146,7 +145,7 @@ def main():
 
     url, soup = get_soup(url)
 
-    subpage_urls = {url: get_subpage_url(url, soup)} # Dict: parent link: child link
+    subpage_urls = {url: get_subpage_url(url, soup)}  # Dict: parent link: child link
 
     print(subpage_urls)
 
