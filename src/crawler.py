@@ -104,18 +104,24 @@ def get_info(cur_url, soup, parent_url=None):
 def recursively_crawl(num_pages: int, url: str):
     count = 0
     queue = []  # Queue for BFS
+    parent_links = []
 
     visited = []  # Visited pages
 
-    # Put the link inside the queue
     queue.append(url)
 
     while num_pages > 0:
         count += 1
         cur_url = queue.pop(0)
+        if count != 1:
+            par_link = parent_links.pop(0)
+        else:
+            par_link = None
         visited.append(cur_url)
 
         soup = get_soup(cur_url)
+
+        parent_link = cur_url
 
         all_url = get_sub_link(cur_url, soup)
 
@@ -123,12 +129,13 @@ def recursively_crawl(num_pages: int, url: str):
             # Ensuring that cycles does not exist.
             if url not in visited and url not in queue:
                 queue.append(url)
+                parent_links.append(parent_link)
 
-
-        print(str(count),end=" ")
-        print(get_info(cur_url, soup))
+        print(str(count), end=" ")
+        print(get_info(cur_url, soup, par_link))
 
         num_pages -= 1
+
     # Proposed: Using CRC32 to convert word into integer, and then use it as the primary key.
 
 
