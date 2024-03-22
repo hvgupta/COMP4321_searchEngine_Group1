@@ -1,7 +1,5 @@
 from socket import gaierror
-import urllib.request
 from urllib.parse import urljoin, urlparse
-import asyncio
 from zlib import crc32
 
 from bs4 import BeautifulSoup as bsoup
@@ -9,11 +7,13 @@ import requests
 import sqlite3
 import datetime
 import dateutil.parser
+from dateutil import parser
 
 import indexer
 
 
-def get_soup(url: str) -> bsoup:
+def get_soup(url: str) -> (bsoup, str):
+    last_modif = None
     if "https://" not in url and "http://" not in url:
         url = "https://" + url
 
@@ -21,6 +21,8 @@ def get_soup(url: str) -> bsoup:
     try:
         request = requests.get(url)
         statCode = request.status_code
+        last_modif = (request.headers['last-modified'])
+
     except gaierror:
         statCode = -1
         request = None
@@ -37,9 +39,9 @@ def get_soup(url: str) -> bsoup:
         print("Page crawling error! Skipping")
 
     response = request.text
-    soup = bsoup(response, "html.parser")
+    soup = bsoup(response, "lxml")
 
-    return soup
+    return soup, last_modif
 
 
 def get_sub_link(url, soup):
@@ -71,7 +73,7 @@ def get_sub_link(url, soup):
     return all_url
 
 
-def get_info(cur_url, soup, parent_url=None):
+def get_info(cur_url, soup, last_modif, parent_url=None):
     if soup is None:
         return tuple()
 
@@ -88,11 +90,6 @@ def get_info(cur_url, soup, parent_url=None):
 
     cur_page_id = crc32(str.encode(cur_url_parsed))
     parent_page_id = crc32(str.encode(par_url_parsed)) if parent_url is not None else None
-
-    last_modif = soup.find("meta", attrs={"class": "lastModified"})
-    if last_modif is None:  # Find the date of the website
-        last_modif = soup.find("meta", attrs={"name": "lastModified"})
-
 
     size = soup.find("meta", attrs={"name": "size"})
     if size is None:
@@ -119,7 +116,7 @@ def recursively_crawl(num_pages: int, url: str):
             par_link = None
         visited.append(cur_url)
 
-        soup = get_soup(cur_url)
+        soup, last_modif = (get_soup(cur_url))
 
         parent_link = cur_url
 
@@ -132,16 +129,14 @@ def recursively_crawl(num_pages: int, url: str):
                 parent_links.append(parent_link)
 
         print(str(count), end=" ")
-        print(get_info(cur_url, soup, par_link))
+        print(get_info(cur_url, soup, last_modif, par_link))
 
         num_pages -= 1
-
-    # Proposed: Using CRC32 to convert word into integer, and then use it as the primary key.
 
 
 def main():
     # - Number of pages that will be crawled / indexed -
-    MAX_NUM_PAGES = 8
+    MAX_NUM_PAGES = 3
 
     # - The URL that the program will be crawled -
     URL = "https://comp4321-hkust.github.io/testpages/testpage.htm"
