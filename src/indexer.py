@@ -31,3 +31,10 @@ def tokenize(soup: bsoup) -> list[str]:
 def inverseIndexCreator(document:bsoup) -> None:
     stemmedDocument:list[str] = stemWords(tokenize(bsoup))
     
+def invertedIndexFromDB():
+    con = sqlite3.connect("files/database.db")
+    # con = sqlite3.connect("files/wordCount.db")
+    cur = con.cursor()
+
+    # Fetch list of all words from all crawled documents
+    res = cur.execute("SELECT word FROM page_id_word WHERE page_id = the_page_id")
