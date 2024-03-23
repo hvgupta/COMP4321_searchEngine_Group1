@@ -6,71 +6,15 @@ import sqlite3
 from email.utils import parsedate_to_datetime
 from datetime import datetime
 import re
+from pathlib import Path
 
 regex = re.compile('[^a-zA-Z]')
 
-import indexer
+db_path = str(Path.cwd()) + '/src/files/database.db'
 
-connection = sqlite3.connect('files/database.db')
+connection = sqlite3.connect(db_path)
 
 cursor = connection.cursor()
-
-
-def init_database():
-    try:
-        cursor.execute("""
-            CREATE TABLE relation (
-                child_id INTEGER,
-                parent_id INTEGER
-            )""")
-
-        cursor.execute("""
-            CREATE TABLE id_url (
-                page_id INTEGER,
-                url TEXT
-            )""")
-
-        cursor.execute("""
-            CREATE TABLE word_id_word (
-                word_id INTEGER,
-                word TEXT
-            )""")
-
-        cursor.execute("""
-            CREATE TABLE inverted_idx (
-              page_id INTEGER,
-              word_id INTEGER,
-              count INTEGER
-            )""")
-
-        cursor.execute("""
-            CREATE TABLE page_info (
-              page_id INTEGER,
-              size INTEGER,
-              last_mod_date INTEGER,
-              title TEXT
-            )""")
-
-        cursor.execute("""
-            CREATE TABLE page_id_word (
-              page_id INTEGER,
-              word TEXT
-            )""")
-
-        connection.commit()
-
-        cursor.execute("""
-            CREATE TABLE title_page_id_word (
-              page_id INTEGER,
-              word TEXT
-            )""")
-
-        connection.commit()
-
-
-    except sqlite3.OperationalError:
-        # Table created. Pass creating.
-        pass
 
 
 def get_soup(url: str) -> (bsoup, str):
@@ -222,15 +166,25 @@ def recursively_crawl(num_pages: int, url: str):
         fetch1 = result.fetchone()
 
         if fetch1 is not None:
+            # If the date of last modification is older
             if fetch1[2] >= last_modif:
                 num_pages -= 1
                 continue
             else:
-                pass
+                # Delete the original data, then insert new data
+                cursor.execute("DELETE FROM relation WHERE parent_id = ?", (cur_page_id,))
+                cursor.execute("DELETE FROM page_id_word WHERE page_id = ?", (cur_page_id,))
+                cursor.execute("DELETE FROM page_info WHERE page_id = ?", (cur_page_id,))
+                cursor.execute("DELETE FROM title_page_id_word WHERE page_id = ?", (cur_page_id,))
+                insert_data_into_relation(int(cur_page_id), int(parent_page_id))
+                insert_data_into_page_info(cur_page_id, size, last_modif, title)
+                insert_data_into_id_url(cur_page_id, cur_url)
+                insert_data_into_page_id_word(text)
+                insert_data_into_title_page_id_word(title, cur_page_id)
 
         insert_data_into_relation(int(cur_page_id), int(parent_page_id))
         insert_data_into_page_info(cur_page_id, size, last_modif, title)
-        insert_data_into_id_url(cur_page_id, url)
+        insert_data_into_id_url(cur_page_id, cur_url)
         insert_data_into_page_id_word(text)
         insert_data_into_title_page_id_word(title, cur_page_id)
         num_pages -= 1
@@ -280,19 +234,3 @@ def insert_data_into_title_page_id_word(title, page_id):
         """, new_list)
 
     connection.commit()
-
-
-def main():
-    init_database()
-
-    # - Number of pages that will be crawled / indexed -
-    MAX_NUM_PAGES = 20
-
-    # - The URL that the program will be crawled -
-    URL = "https://comp4321-hkust.github.io/testpages/testpage.htm"
-
-    recursively_crawl(MAX_NUM_PAGES, URL)
-
-
-if __name__ == '__main__':
-    main()
