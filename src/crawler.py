@@ -1,15 +1,57 @@
-from socket import gaierror
 from urllib.parse import urljoin, urlparse
 from zlib import crc32
-
 from bs4 import BeautifulSoup as bsoup
 import requests
 import sqlite3
-import datetime
-import dateutil.parser
-from dateutil import parser
+from email.utils import parsedate_to_datetime
+from datetime import datetime
 
 import indexer
+
+connection = sqlite3.connect('files/database.db')
+
+cursor = connection.cursor()
+
+def init_database():
+    try:
+        cursor.execute("""
+            CREATE TABLE relation (
+                child_id INTEGER,
+                parent_id INTEGER
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE id_url (
+                page_id INTEGER,
+                url TEXT
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE word_id_word (
+                word_id INTEGER,
+                word TEXT
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE inverted_idx (
+              page_id INTEGER,
+              word_id INTEGER,
+              count INTEGER
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE page_info (
+              page_id INTEGER,
+              size INTEGER,
+              last_mod_date INTEGER,
+              title TEXT
+            )""")
+
+        connection.commit()
+
+    except sqlite3.OperationalError:
+        # Table created. Pass creating.
+        pass
 
 
 def get_soup(url: str) -> (bsoup, str):
@@ -22,8 +64,13 @@ def get_soup(url: str) -> (bsoup, str):
         request = requests.get(url)
         statCode = request.status_code
         last_modif = (request.headers['last-modified'])
+        last_modif = parsedate_to_datetime(last_modif)
+        last_modif = int(datetime.timestamp(last_modif))
 
-    except gaierror:
+    except KeyError:
+        last_modif = None
+
+    except:
         statCode = -1
         request = None
         print("Page crawling error! Skipping")
@@ -89,13 +136,15 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
         par_url_parsed = None
 
     cur_page_id = crc32(str.encode(cur_url_parsed))
-    parent_page_id = crc32(str.encode(par_url_parsed)) if parent_url is not None else None
+    parent_page_id = crc32(str.encode(par_url_parsed)) if parent_url is not None else 0
+
+    text = soup.find("body").text
 
     size = soup.find("meta", attrs={"name": "size"})
     if size is None:
-        size = len(soup.find("body").text)
+        size = len(text)
 
-    return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size
+    return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, text
 
 
 def recursively_crawl(num_pages: int, url: str):
@@ -107,13 +156,19 @@ def recursively_crawl(num_pages: int, url: str):
 
     queue.append(url)
 
-    while num_pages > 0:
+    # num_pages > 0: To ensure we are in the limit
+    # queue != []: To ensure the website still have sub-links.
+    while num_pages > 0 and queue != []:
+
         count += 1
+
         cur_url = queue.pop(0)
+
         if count != 1:
             par_link = parent_links.pop(0)
         else:
             par_link = None
+
         visited.append(cur_url)
 
         soup, last_modif = (get_soup(cur_url))
@@ -128,15 +183,57 @@ def recursively_crawl(num_pages: int, url: str):
                 queue.append(url)
                 parent_links.append(parent_link)
 
-        print(str(count), end=" ")
-        print(get_info(cur_url, soup, last_modif, par_link))
+        cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, text = (
+            get_info(cur_url, soup, last_modif, par_link))
+
+        # If the database has the exact item (Which is page_id), and the last modification date is newer / the same
+        # as the crawled date, skip adding to database.
+        result = cursor.execute("""
+            SELECT * FROM page_info WHERE page_id=?
+        """, (cur_page_id,))
+
+        fetch1 = result.fetchone()
+
+        if fetch1 is not None:
+            if fetch1[2] >= last_modif:
+                num_pages -= 1
+                continue
+
+        insert_data_into_relation(int(cur_page_id), int(parent_page_id))
+        insert_data_into_page_info(cur_page_id, size, last_modif,title)
+        insert_data_into_id_url(cur_page_id, url)
 
         num_pages -= 1
 
 
+def insert_data_into_relation(child, parent):
+    # Assume the database has been created
+    cursor.execute("""
+        INSERT INTO relation VALUES (?,?)
+    """, (child, parent))
+    connection.commit()
+
+
+def insert_data_into_id_url(page_id, url):
+    cursor.execute("""
+        INSERT INTO id_url VALUES (?,?)
+    """, (page_id, url))
+    connection.commit()
+
+
+def insert_data_into_page_info(page_id, size, last_modif, title):
+    cursor.execute("""
+        INSERT INTO page_info VALUES (?,?,?,?)
+    """, (page_id, size, last_modif, title))
+    connection.commit()
+
+
+
 def main():
+    init_database()
+
     # - Number of pages that will be crawled / indexed -
-    MAX_NUM_PAGES = 3
+    MAX_NUM_PAGES = 8
 
     # - The URL that the program will be crawled -
     URL = "https://comp4321-hkust.github.io/testpages/testpage.htm"
