@@ -25,3 +25,4 @@ def tokenize(soup: bsoup) -> list:
 def stemWords(words: list) -> list:
     return [ps.stem(word) for word in words]
 
+

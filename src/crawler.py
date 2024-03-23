@@ -5,6 +5,9 @@ import requests
 import sqlite3
 from email.utils import parsedate_to_datetime
 from datetime import datetime
+import re
+
+regex = re.compile('[^a-zA-Z]')
 
 import indexer
 
@@ -45,6 +48,12 @@ def init_database():
               size INTEGER,
               last_mod_date INTEGER,
               title TEXT
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE page_id_word (
+              page_id INTEGER,
+              word TEXT
             )""")
 
         connection.commit()
@@ -138,13 +147,21 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
     cur_page_id = crc32(str.encode(cur_url_parsed))
     parent_page_id = crc32(str.encode(par_url_parsed)) if parent_url is not None else 0
 
-    text = soup.find("body").text
+    text = soup.find("body").text.split()
+
+    for i in range(len(text)):
+        text[i] = re.sub("[^a-zA-Z]+", "", text[i])
+
+    while "" in text:
+        text.remove("")
 
     size = soup.find("meta", attrs={"name": "size"})
     if size is None:
         size = len(text)
 
-    return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, text
+    page_id_text = list(zip([cur_page_id] * len(text), text))
+
+    return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, page_id_text
 
 
 def recursively_crawl(num_pages: int, url: str):
@@ -198,11 +215,13 @@ def recursively_crawl(num_pages: int, url: str):
             if fetch1[2] >= last_modif:
                 num_pages -= 1
                 continue
+            else:
+                pass
 
         insert_data_into_relation(int(cur_page_id), int(parent_page_id))
         insert_data_into_page_info(cur_page_id, size, last_modif,title)
         insert_data_into_id_url(cur_page_id, url)
-
+        insert_data_into_page_id_word(text)
         num_pages -= 1
 
 
@@ -227,6 +246,13 @@ def insert_data_into_page_info(page_id, size, last_modif, title):
     """, (page_id, size, last_modif, title))
     connection.commit()
 
+
+def insert_data_into_page_id_word(list_of_id):
+    cursor.executemany("""
+        INSERT INTO page_id_word VALUES (?,?)
+        """, list_of_id)
+
+    connection.commit()
 
 
 def main():
