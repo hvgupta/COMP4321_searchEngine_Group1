@@ -65,3 +65,19 @@ def invertedIndexFromPages(title=False):
         new_rows = np.transpose([page_ids, word_ids, freq])
         cur.executemany(f"INSERT INTO {target_inv_idx[title]} VALUES(?, ?, ?)", new_rows)
         con.commit()
+
+def stemPageIdWord():
+    con = sqlite3.connect("files/database.db")
+    cur = con.cursor()
+
+    # Get all the rows
+    pages_words = cur.execute("SELECT page_id, word FROM page_id_word")
+    pages_words = np.array(pages_words.fetchall())
+
+    # Stem all the words
+    pages_words = np.transpose(pages_words)
+    pages_words[1] =  np.array(stemWords(pages_words[1]))
+
+    for page_id, word in pages_words:
+        cur.execute("INSERT INTO page_id_word_stem VALUES(?, ?)", page_id, word)
+        con.commit()
