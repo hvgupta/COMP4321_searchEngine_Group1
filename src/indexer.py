@@ -14,7 +14,6 @@ db = sqlite3.connect('files/wordCount.db')
 
 with open('files/stopwords.txt', 'r') as file:
     stopwords = file.read().split()
-    
 
 def stemWords(words: list) -> list:
     return [ps.stem(word) for word in words]
