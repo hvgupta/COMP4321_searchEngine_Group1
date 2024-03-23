@@ -15,6 +15,7 @@ connection = sqlite3.connect('files/database.db')
 
 cursor = connection.cursor()
 
+
 def init_database():
     try:
         cursor.execute("""
@@ -57,6 +58,15 @@ def init_database():
             )""")
 
         connection.commit()
+
+        cursor.execute("""
+            CREATE TABLE title_page_id_word (
+              page_id INTEGER,
+              word TEXT
+            )""")
+
+        connection.commit()
+
 
     except sqlite3.OperationalError:
         # Table created. Pass creating.
@@ -219,9 +229,10 @@ def recursively_crawl(num_pages: int, url: str):
                 pass
 
         insert_data_into_relation(int(cur_page_id), int(parent_page_id))
-        insert_data_into_page_info(cur_page_id, size, last_modif,title)
+        insert_data_into_page_info(cur_page_id, size, last_modif, title)
         insert_data_into_id_url(cur_page_id, url)
         insert_data_into_page_id_word(text)
+        insert_data_into_title_page_id_word(title, cur_page_id)
         num_pages -= 1
 
 
@@ -252,6 +263,22 @@ def insert_data_into_page_id_word(list_of_id):
         INSERT INTO page_id_word VALUES (?,?)
         """, list_of_id)
 
+
+def insert_data_into_title_page_id_word(title, page_id):
+    title = title.split()
+
+    for i in range(len(title)):
+        title[i] = re.sub("[^a-zA-Z]+", "", title[i])
+
+    while "" in title:
+        title.remove("")
+
+    new_list = zip([page_id] * len(title), title)
+
+    cursor.executemany("""
+        INSERT INTO title_page_id_word VALUES (?,?)
+        """, new_list)
+
     connection.commit()
 
 
@@ -259,7 +286,7 @@ def main():
     init_database()
 
     # - Number of pages that will be crawled / indexed -
-    MAX_NUM_PAGES = 8
+    MAX_NUM_PAGES = 20
 
     # - The URL that the program will be crawled -
     URL = "https://comp4321-hkust.github.io/testpages/testpage.htm"
