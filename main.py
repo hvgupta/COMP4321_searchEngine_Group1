@@ -36,6 +36,13 @@ def init_database():
             )""")
 
         cursor.execute("""
+            CREATE TABLE title_inverted_idx (
+              page_id INTEGER,
+              word_id INTEGER,
+              count INTEGER
+            )""")
+
+        cursor.execute("""
             CREATE TABLE page_info (
               page_id INTEGER,
               size INTEGER,
@@ -59,7 +66,6 @@ def init_database():
 
         connection.commit()
 
-
     except sqlite3.OperationalError:
         # Table created. Pass creating.
         pass
@@ -77,7 +83,6 @@ def create_file_from_db():
             pageinfo = cursor.execute("""
                 SELECT * FROM page_info WHERE page_id = ?
             """, (pid,)).fetchone()
-
 
             url = cursor.execute("""
                     SELECT url FROM id_url WHERE page_id = ?
@@ -107,6 +112,7 @@ def create_file_from_db():
                 file.write(child_link + "\n")
             file.write("-" * 30 + "\n")
 
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -130,6 +136,7 @@ def main():
         from src.crawler import recursively_crawl
         init_database()
         recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
+
     else:
         create_file_from_db()
 
