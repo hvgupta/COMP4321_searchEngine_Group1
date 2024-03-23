@@ -29,13 +29,25 @@ def tokenize(soup: bsoup) -> list[str]:
         return []
     return removeStopWords(regex.sub(' ', soup.find("body").text).split())
 
-def inverseIndexCreator(document:bsoup) -> None:
+def inverseIndexCreator(document:bsoup, documentID:int) -> None:
     stemmedDocument:list[str] = stemWords(tokenize(document))
     
     uniqueWords: np.ndarray[str]
     wordCount: np.ndarray[int]
     uniqueWords, wordCount = np.unique(stemmedDocument, return_counts=True)
     
-    wordDict: dict[str, int] = dict(zip(uniqueWords, wordCount))
-    insert(db, wordDict)
+    currentVocab: np.ndarray[str] = np.array(get_column_names(db, "wordCount"))
+    truthTable: np.ndarray[bool] = np.isin(uniqueWords, currentVocab)
+    
+    notInVocab: np.ndarray[str] = uniqueWords[~truthTable]
+    notInVocabCount: np.ndarray[int] = wordCount[~truthTable]
+    outWordDict: dict[str, int] = dict(zip(notInVocab, notInVocabCount))
+    
+    inVocab: np.ndarray[str] = uniqueWords[truthTable]
+    inVocabCount: np.ndarray[int] = wordCount[truthTable]
+    wordDict: dict[str, int] = dict(zip(inVocab, inVocabCount))
+
+    insert(db, "wordCount", documentID,wordDict)
+    
+    
     
