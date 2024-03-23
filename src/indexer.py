@@ -49,8 +49,12 @@ def invertedIndexFromPages(title=False):
     for page_id in pages:
         # Get list of words in a page
         page_id_unpacked = page_id[0]  # fetchall() puts each row in a tuple
-        res_words_in_page = cur.execute(f"SELECT word FROM {target_table[title]} WHERE page_id = ?", page_id)
-        words_in_page = np.array(res_words_in_page.fetchall()).flatten()
+        res_words_in_page = cur.execute(f"SELECT word FROM {target_table[title]} WHERE page_id = ?", page_id_unpacked)
+        words_in_page = np.array(res_words_in_page.fetchall()).flatten().tolist()  # stemWords takes lists
+
+        # Stem the words
+        words_in_page = removeStopWords(words_in_page).tolist()
+        words_in_page = np.array(stemWords(words_in_page))
 
         # Count the occurence of each word
         word, freq = np.unique(words_in_page, return_counts=True)
