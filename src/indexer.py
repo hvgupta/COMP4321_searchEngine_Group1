@@ -14,6 +14,8 @@ ps = Stemmer()
 
 db = sqlite3.connect('files/database.db')
 
+db = sqlite3.connect('files/database.db')
+
 with open('files/stopwords.txt', 'r') as file:
     stopwords = file.read().split()
 
