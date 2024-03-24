@@ -68,12 +68,15 @@ def invertedIndexFromPages(title=False):
         cur.executemany(f"INSERT INTO {target_inv_idx[title]} VALUES(?, ?, ?)", new_rows)
         con.commit()
 
-def stemPageIdWord():
+def stemPageIdWord(title=False):
+    input_table = {False: "page_id_word", True: "title_page_id_word"}
+    output_table = {False: "page_id_word_stem", True: "title_page_id_word_stem"}
+
     con = sqlite3.connect("files/database.db")
     cur = con.cursor()
 
     # Get all the rows
-    pages_words = cur.execute("SELECT page_id, word FROM page_id_word")
+    pages_words = cur.execute(f"SELECT page_id, word FROM {input_table[title]}")
     pages_words = np.array(pages_words.fetchall())
 
     # Stem all the words
@@ -81,5 +84,5 @@ def stemPageIdWord():
     pages_words[1] =  np.array(stemWords(pages_words[1]))
 
     for page_id, word in pages_words:
-        cur.execute("INSERT INTO page_id_word_stem VALUES(?, ?)", page_id, word)
+        cur.execute(f"INSERT INTO {output_table[title]} VALUES(?, ?)", page_id, word)
         con.commit()

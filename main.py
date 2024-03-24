@@ -56,13 +56,25 @@ def init_database():
               word TEXT
             )""")
 
-        connection.commit()
-
         cursor.execute("""
             CREATE TABLE title_page_id_word (
               page_id INTEGER,
               word TEXT
             )""")
+
+        cursor.execute("""
+            CREATE TABLE page_id_word_stem (
+              page_id INTEGER,
+              word TEXT
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE title_page_id_word_stem (
+              page_id INTEGER,
+              word TEXT
+            )
+        """)
 
         connection.commit()
 
