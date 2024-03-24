@@ -6,7 +6,10 @@ import sqlite3
 from email.utils import parsedate_to_datetime
 from datetime import datetime
 import re
+import asyncio
 from pathlib import Path
+import signal
+from contextlib import contextmanager
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -17,18 +20,41 @@ connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
 
-def get_soup(url: str) -> (bsoup, str):
+class TimeoutException(Exception): pass
+
+
+# Thanks https://stackoverflow.com/a/601168 for providing this function.
+@contextmanager
+def time_limit(seconds):
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+
+
+async def get_soup(url: str) -> (bsoup, str):
+    if "pdf" in url:
+        return
     last_modif = None
     if "https://" not in url and "http://" not in url:
         url = "https://" + url
 
     # Try to get the data. If failed, then the program terminates.
     try:
-        request = requests.get(url)
+        with time_limit(5):
+            request = requests.get(url)
         statCode = request.status_code
-        last_modif = (request.headers['last-modified'])
-        last_modif = parsedate_to_datetime(last_modif)
+        last_modif = parsedate_to_datetime((request.headers['last-modified']))
         last_modif = int(datetime.timestamp(last_modif))
+
+    except TimeoutException as e:
+        print("Crawling the page " + url + " exceed 10 second! Skipping crawling the page!")
+        return
 
     except KeyError:
         last_modif = None
@@ -36,17 +62,18 @@ def get_soup(url: str) -> (bsoup, str):
     except:
         statCode = -1
         request = None
-        print("Page crawling error! Skipping")
+        print("Page crawling error for page " + url + "! Skipping")
         pass
 
     # Check if the request is successful or not.
     # If not then we assume the website is invalid, or the server is not responding.
     if statCode != -1:
         if statCode not in range(200, 399):
-            print("Error code " + str(statCode) + ". Please check your input and try again.")
-            exit(255)
+            print("Error code " + str(statCode) + " for webpage " + url + ". Please check your input and try again.")
+            return
     else:
-        print("Page crawling error! Skipping")
+        print("Page crawling error for page " + url + "! Skipping")
+        return
 
     response = request.text
     soup = bsoup(response, "lxml")
@@ -86,8 +113,10 @@ def get_sub_link(url, soup):
 def get_info(cur_url, soup, last_modif, parent_url=None):
     if soup is None:
         return tuple()
-
-    title = soup.title.get_text()
+    try:
+        title = soup.title.get_text()
+    except:
+        title = ""
 
     cur_url_parsed = urlparse(cur_url)
     cur_url_parsed = (cur_url_parsed.scheme + "://" + cur_url_parsed.netloc + cur_url_parsed.path)
@@ -101,7 +130,12 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
     cur_page_id = crc32(str.encode(cur_url_parsed))
     parent_page_id = crc32(str.encode(par_url_parsed)) if parent_url is not None else 0
 
-    text = soup.find("body").text.split()
+    # Have to handle the <br> elements 🖕
+
+    for br in soup.select("br"):
+        br.replace_with("\n")
+
+    text = soup.get_text().split()  # get list of strings
 
     for i in range(len(text)):
         text[i] = re.sub("[^a-zA-Z]+", "", text[i])
@@ -142,7 +176,10 @@ def recursively_crawl(num_pages: int, url: str):
 
         visited.append(cur_url)
 
-        soup, last_modif = (get_soup(cur_url))
+        try:
+            soup, last_modif = asyncio.run(get_soup(cur_url))
+        except TypeError:
+            continue
 
         parent_link = cur_url
 
@@ -167,6 +204,8 @@ def recursively_crawl(num_pages: int, url: str):
 
         if fetch1 is not None:
             # If the date of last modification is older
+            if fetch1[2] is None and last_modif is None:
+                continue
             if fetch1[2] >= last_modif:
                 num_pages -= 1
                 continue
@@ -178,7 +217,6 @@ def recursively_crawl(num_pages: int, url: str):
                 cursor.execute("DELETE FROM title_page_id_word WHERE page_id = ?", (cur_page_id,))
                 insert_data_into_relation(int(cur_page_id), int(parent_page_id))
                 insert_data_into_page_info(cur_page_id, size, last_modif, title)
-                insert_data_into_id_url(cur_page_id, cur_url)
                 insert_data_into_page_id_word(text)
                 insert_data_into_title_page_id_word(title, cur_page_id)
 

@@ -14,6 +14,7 @@ The project is based on Python, version ***3.11.0***. The project uses the follo
 - pathlib to get the absolute path of the files so that the database file can be accessed correctly
 - nltk.stem as stemmer
 - numpy as list to increase the speed
+- asyncio to increase the running speed
 
 Users are required to execute the command on a **_Linux-based_** operating system, with bash or zsh as the shell.
 

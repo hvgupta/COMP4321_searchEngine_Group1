@@ -8,60 +8,81 @@ connection = sqlite3.connect('./src/files/database.db')
 cursor = connection.cursor()
 
 
+# Init a database, when there is a conflict, we IGNORE those contents
 def init_database():
     try:
         cursor.execute("""
             CREATE TABLE relation (
-                child_id INTEGER,
+                child_id INTEGER [primary key], 
                 parent_id INTEGER
             )""")
 
         cursor.execute("""
             CREATE TABLE id_url (
-                page_id INTEGER,
-                url TEXT
+                page_id INTEGER [primary key],
+                url TEXT [primary key],
+                UNIQUE (page_id, url) ON CONFLICT IGNORE
             )""")
 
         cursor.execute("""
             CREATE TABLE word_id_word (
-                word_id INTEGER,
-                word TEXT
+                word_id INTEGER [primary key],
+                word TEXT [primary key],
+                UNIQUE (word_id, word) ON CONFLICT IGNORE 
             )""")
 
         cursor.execute("""
             CREATE TABLE inverted_idx (
               page_id INTEGER,
               word_id INTEGER,
-              count INTEGER
+              count INTEGER, 
+              UNIQUE (page_id, word_id, count) ON CONFLICT IGNORE
             )""")
 
         cursor.execute("""
             CREATE TABLE title_inverted_idx (
               page_id INTEGER,
               word_id INTEGER,
-              count INTEGER
+              count INTEGER,
+              UNIQUE (page_id, word_id, count) ON CONFLICT IGNORE
             )""")
 
         cursor.execute("""
             CREATE TABLE page_info (
-              page_id INTEGER,
+              page_id INTEGER [primary key],
               size INTEGER,
               last_mod_date INTEGER,
-              title TEXT
+              title TEXT,
+              UNIQUE (page_id, size, last_mod_date, title) ON CONFLICT IGNORE
             )""")
 
         cursor.execute("""
             CREATE TABLE page_id_word (
               page_id INTEGER,
-              word TEXT
+              word TEXT,
+              UNIQUE (page_id, word) ON CONFLICT IGNORE
+
             )""")
 
-        connection.commit()
+        cursor.execute("""
+            CREATE TABLE page_id_word_stem (
+              page_id INTEGER,
+              word TEXT,
+              UNIQUE (page_id, word) ON CONFLICT IGNORE
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE title_page_id_word_stem (
+              page_id INTEGER,
+              word TEXT,
+              UNIQUE (page_id, word) ON CONFLICT IGNORE
+            )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word (
               page_id INTEGER,
-              word TEXT
+              word TEXT,
+              UNIQUE (page_id, word) ON CONFLICT IGNORE
             )""")
 
         connection.commit()
@@ -73,9 +94,18 @@ def init_database():
 
 def create_file_from_db():
     with open("spider_result.txt", "w+") as file:
-        cursor.execute("""
-            SELECT page_id FROM page_info  
-        """)
+        try:
+            cursor.execute("""
+                SELECT page_id FROM page_info  
+            """)
+        except sqlite3.OperationalError:
+            print("You did not create the necessary databases yet. Crawling with default setting.")
+            from src.crawler import recursively_crawl
+            from src.indexer import indexer
+            init_database()
+            recursively_crawl(num_pages=30, url="https://comp4321-hkust.github.io/testpages/testpage.htm")
+            indexer()
+            create_file_from_db()
 
         all_page_id = cursor.fetchall()
 
@@ -93,6 +123,17 @@ def create_file_from_db():
             file.write(url)
             file.write("\n")
             file.write(str(datetime.fromtimestamp(pageinfo[2])) + ", " + str(pageinfo[1]) + "\n")
+
+            # Top 10 words
+            list_of_word = cursor.execute("""SELECT word_id, count FROM inverted_idx where page_id = ? order by count desc limit 10 """, (pid,)).fetchall()
+
+            for word in list_of_word:
+                keyword = word[0]  # Unpack the word
+                count = word[1]
+
+                file.write(keyword + " " + str(count) + "; ")
+
+            file.write("\n")
 
             # Child link
             list_of_child_id = cursor.execute("""
@@ -134,9 +175,10 @@ def main():
 
     if not args.is_test:
         from src.crawler import recursively_crawl
+        from src.indexer import indexer
         init_database()
         recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
-
+        indexer()
     else:
         create_file_from_db()
 

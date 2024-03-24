@@ -1,6 +1,7 @@
 Test page
 https://comp4321-hkust.github.io/testpages/testpage.htm
-2024-02-20 16:53:32, 33
+2024-02-20 16:53:32, 35
+admiss 1; befor 1; book 1; crawler 1; cse 1; depart 1; get 1; here 1; hkust 1; intern 1; 
 https://comp4321-hkust.github.io/testpages/ust_cse.htm
 https://comp4321-hkust.github.io/testpages/news.htm
 https://comp4321-hkust.github.io/testpages/books.htm
@@ -8,26 +9,30 @@ https://comp4321-hkust.github.io/testpages/Movie.htm
 ------------------------------
 CSE department of HKUST
 https://comp4321-hkust.github.io/testpages/ust_cse.htm
-2024-02-20 16:53:32, 11
+2024-02-20 16:53:32, 15
+admiss 1; back 1; cse 1; depart 1; hkust 1; main 1; pg 1; ug 1; 
 https://comp4321-hkust.github.io/testpages/ust_cse/PG.htm
 https://comp4321-hkust.github.io/testpages/ust_cse/UG.htm
 ------------------------------
 News
 https://comp4321-hkust.github.io/testpages/news.htm
-2024-02-20 16:53:32, 8
+2024-02-20 16:53:32, 9
+back 1; bbc 1; cnn 1; main 1; new 1; news 1; 
 https://comp4321-hkust.github.io/testpages/news/bbc.htm
 https://comp4321-hkust.github.io/testpages/news/cnn.htm
 ------------------------------
 books
 https://comp4321-hkust.github.io/testpages/books.htm
-2024-02-20 16:53:32, 28
+2024-02-20 16:53:32, 29
+book 2; a 1; articl 1; autom 1; back 1; base 1; classif 1; data 1; gener 1; inform 1; 
 https://comp4321-hkust.github.io/testpages/books/book1.htm
 https://comp4321-hkust.github.io/testpages/books/book2.htm
 https://comp4321-hkust.github.io/testpages/books/book3.htm
 ------------------------------
 Movie Index Page
 https://comp4321-hkust.github.io/testpages/Movie.htm
-2024-02-20 16:53:32, 1068
+2024-02-20 16:53:32, 1071
+beauti 3; lie 3; anim 2; blood 2; chain 2; clifford 2; crazi 2; day 2; dog 2; hunter 2; 
 https://comp4321-hkust.github.io/testpages/Movie/1.html
 https://comp4321-hkust.github.io/testpages/Movie/2.html
 https://comp4321-hkust.github.io/testpages/Movie/3.html
@@ -41,101 +46,126 @@ https://comp4321-hkust.github.io/testpages/Movie/10.html
 ------------------------------
 PG
 https://comp4321-hkust.github.io/testpages/ust_cse/PG.htm
-2024-02-20 16:53:32, 386
+2024-02-20 16:53:32, 387
+program 4; applic 3; comput 3; requir 3; student 3; studi 3; addit 2; admiss 2; compet 2; degre 2; 
 ------------------------------
 UG
 https://comp4321-hkust.github.io/testpages/ust_cse/UG.htm
-2024-02-20 16:53:32, 433
+2024-02-20 16:53:32, 434
+program 4; student 4; comput 3; graduat 3; hkust 2; inform 2; it 2; job 2; offer 2; opportun 2; 
 ------------------------------
 BBC news
 https://comp4321-hkust.github.io/testpages/news/bbc.htm
-2024-02-20 16:53:32, 19
+2024-02-20 16:53:32, 21
+back 1; bbc 1; bird 1; blackburn 1; bt 1; commit 1; fifth 1; goonhilli 1; ham 1; mp 1; 
 ------------------------------
 CNN news
 https://comp4321-hkust.github.io/testpages/news/cnn.htm
-2024-02-20 16:53:32, 16
+2024-02-20 16:53:32, 18
+accordion 1; back 1; capit 1; caus 1; chao 1; cnn 1; econom 1; new 1; news 1; sauerkraut 1; 
 ------------------------------
 book1
 https://comp4321-hkust.github.io/testpages/books/book1.htm
-2024-02-20 16:53:32, 212
+2024-02-20 16:53:32, 213
+book 2; descript 2; inform 2; keyword 2; mean 2; relat 2; retriev 2; topic 2; account 1; am 1; 
 ------------------------------
 book2
 https://comp4321-hkust.github.io/testpages/books/book2.htm
-2024-02-20 16:53:32, 244
+2024-02-20 16:53:32, 245
+base 3; consid 3; book 2; chemic 2; continu 2; data 2; gener 2; machineread 2; system 2; a 1; 
 ------------------------------
 book3
 https://comp4321-hkust.github.io/testpages/books/book3.htm
-2024-02-20 16:53:32, 247
+2024-02-20 16:53:32, 248
+book 3; mean 3; relev 3; report 2; system 2; term 2; user 2; a 1; accept 1; admittedli 1; 
 ------------------------------
 Dinosaur Planet (2003)
 https://comp4321-hkust.github.io/testpages/Movie/1.html
-2024-02-20 16:53:32, 337
+2024-02-20 16:53:32, 393
+search 5; titl 4; episod 3; aka 2; compani 2; dinosaur 2; giant 2; index 2; match 2; movi 2; 
 ------------------------------
 Isle of Man TT 2004 Review (2004)
 https://comp4321-hkust.github.io/testpages/Movie/2.html
-2024-02-20 16:53:32, 274
+2024-02-20 16:53:32, 326
+search 5; titl 4; episod 3; aka 2; compani 2; index 2; match 2; movi 2; prefer 2; result 2; 
 ------------------------------
 Character (1997)
 https://comp4321-hkust.github.io/testpages/Movie/3.html
-2024-02-20 16:53:32, 387
+2024-02-20 16:53:32, 443
+search 5; titl 4; episod 3; aka 2; charact 2; compani 2; index 2; match 2; movi 2; play 2; 
 ------------------------------
 Paula Abdul's Get Up and Dance (1994)
 https://comp4321-hkust.github.io/testpages/Movie/4.html
-2024-02-20 16:53:32, 270
+2024-02-20 16:53:32, 322
+search 5; titl 4; episod 3; abdul 2; aka 2; compani 2; index 2; match 2; movi 2; prefer 2; 
 ------------------------------
 The Rise and Fall of ECW (2004)
 https://comp4321-hkust.github.io/testpages/Movie/5.html
-2024-02-20 16:53:32, 455
+2024-02-20 16:53:32, 514
+search 5; titl 4; episod 3; aka 2; compani 2; index 2; match 2; movi 2; new 2; prefer 2; 
 ------------------------------
 Sick (1997)
 https://comp4321-hkust.github.io/testpages/Movie/6.html
-2024-02-20 16:53:32, 559
+2024-02-20 16:53:32, 629
+search 5; titl 4; episod 3; aka 2; anim 2; compani 2; index 2; it 2; match 2; mind 2; 
 ------------------------------
 8 Man (1992)
 https://comp4321-hkust.github.io/testpages/Movie/7.html
-2024-02-20 16:53:32, 332
+2024-02-20 16:53:32, 388
+search 5; titl 4; episod 3; aka 2; compani 2; index 2; match 2; movi 2; prefer 2; result 2; 
 ------------------------------
 What the #$*! Do We Know!? (2004)
 https://comp4321-hkust.github.io/testpages/Movie/8.html
-2024-02-20 16:53:32, 484
+2024-02-20 16:53:32, 544
+search 5; titl 4; episod 3; aka 2; compani 2; index 2; know 2; make 2; match 2; movi 2; 
 ------------------------------
 Class of Nuke 'Em High 2 (1991)
 https://comp4321-hkust.github.io/testpages/Movie/9.html
-2024-02-20 16:53:32, 658
+2024-02-20 16:53:32, 847
+comment 4; rate 4; class 3; compani 3; film 3; movi 3; photo 3; plot 3; recommend 3; subhumanoid 3; 
 ------------------------------
 Fighter (2001)
 https://comp4321-hkust.github.io/testpages/Movie/10.html
-2024-02-20 16:53:32, 1348
+2024-02-20 16:53:32, 1517
+search 5; titl 4; episod 3; pilot 3; aka 2; art 2; byeonshin 2; challeng 2; compani 2; dou 2; 
 ------------------------------
 Full Frame: Documentary Shorts (1999)
 https://comp4321-hkust.github.io/testpages/Movie/11.html
-2024-02-20 16:53:32, 249
+2024-02-20 16:53:32, 298
+search 5; titl 4; episod 3; aka 2; compani 2; index 2; match 2; movi 2; prefer 2; result 2; 
 ------------------------------
 My Favorite Brunette (1947)
 https://comp4321-hkust.github.io/testpages/Movie/12.html
-2024-02-20 16:53:32, 547
+2024-02-20 16:53:32, 739
+comment 4; rate 4; compani 3; movi 3; photo 3; plot 3; recommend 3; trailer 3; updat 3; user 3; 
 ------------------------------
 Lord of the Rings: The Return of the King: Extended Edition: Bonus Material (2003)
 https://comp4321-hkust.github.io/testpages/Movie/13.html
-2024-02-20 16:53:32, 305
+2024-02-20 16:53:32, 363
+search 5; titl 4; episod 3; compani 2; index 2; match 2; movi 2; prefer 2; result 2; return 2; 
 ------------------------------
 Nature: Antarctica (1982)
 https://comp4321-hkust.github.io/testpages/Movie/14.html
-2024-02-20 16:53:32, 336
+2024-02-20 16:53:32, 394
+search 5; titl 4; episod 3; aka 2; compani 2; index 2; match 2; movi 2; nankyoku 2; offic 2; 
 ------------------------------
 Neil Diamond: Greatest Hits Live (1988)
 https://comp4321-hkust.github.io/testpages/Movie/15.html
-2024-02-20 16:53:32, 476
+2024-02-20 16:53:32, 642
+comment 4; film 4; concert 3; movi 3; photo 3; plot 3; rate 3; recommend 3; trailer 3; user 3; 
 ------------------------------
 Screamers (1996)
 https://comp4321-hkust.github.io/testpages/Movie/16.html
-2024-02-20 16:53:32, 355
+2024-02-20 16:53:32, 414
+search 5; titl 4; episod 3; scream 3; aka 2; compani 2; dreamer 2; field 2; index 2; match 2; 
 ------------------------------
 7 Seconds (2005)
 https://comp4321-hkust.github.io/testpages/Movie/17.html
-2024-02-20 16:53:32, 329
+2024-02-20 16:53:32, 380
+search 5; titl 4; episod 3; result 3; aka 2; compani 2; index 2; match 2; movi 2; prefer 2; 
 ------------------------------
 Immortal Beloved (1994)
 https://comp4321-hkust.github.io/testpages/Movie/18.html
-2024-02-20 16:53:32, 654
+2024-02-20 16:53:32, 856
+comment 4; film 4; photo 4; compani 3; movi 3; plot 3; rate 3; recommend 3; sound 3; taglin 3; 
 ------------------------------
