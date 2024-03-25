@@ -11,6 +11,8 @@ regex = re.compile('[^a-zA-Z]')
 
 ps = Stemmer()
 
+db = sqlite3.connect('files/database.db')
+
 with open(pathlib.Path(__file__).parent/'files/stopwords.txt', 'r') as file:
     stopwords = file.read().split()
 
