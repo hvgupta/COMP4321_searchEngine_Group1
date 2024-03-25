@@ -20,7 +20,8 @@ connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
 
-class TimeoutException(Exception): pass
+class TimeoutException(Exception):
+    pass
 
 
 # Thanks https://stackoverflow.com/a/601168 for providing this function.
@@ -38,7 +39,8 @@ def time_limit(seconds):
 
 
 async def get_soup(url: str) -> (bsoup, str):
-    if "pdf" in url:
+    # We will skip pdf and mailto
+    if url[-3:] == "pdf" or url[0:6] == "mailto":
         return
     last_modif = None
     if "https://" not in url and "http://" not in url:
@@ -49,21 +51,23 @@ async def get_soup(url: str) -> (bsoup, str):
         with time_limit(5):
             request = requests.get(url)
         statCode = request.status_code
-        last_modif = parsedate_to_datetime((request.headers['last-modified']))
-        last_modif = int(datetime.timestamp(last_modif))
+        try:
+            last_modif = parsedate_to_datetime((request.headers['last-modified']))
+            last_modif = int(datetime.timestamp(last_modif))
+
+        # If we cannot crawl the date, get the current time
+        except KeyError:
+            last_modif = parsedate_to_datetime((request.headers['Date']))
+            last_modif = int(datetime.timestamp(last_modif))
 
     except TimeoutException as e:
-        print("Crawling the page " + url + " exceed 10 second! Skipping crawling the page!")
+        print("Crawling the page " + url + " exceed 5 second! Skipping crawling the page!")
         return
 
-    except KeyError:
-        last_modif = None
-
+    # Otherwise
     except:
-        statCode = -1
-        request = None
-        print("Page crawling error for page " + url + "! Skipping")
-        pass
+        print("Error occurred when crawling the page " + url + ". Skipping")
+        return
 
     # Check if the request is successful or not.
     # If not then we assume the website is invalid, or the server is not responding.
@@ -111,11 +115,15 @@ def get_sub_link(url, soup):
 
 
 def get_info(cur_url, soup, last_modif, parent_url=None):
+    # If we did not pass the soup inside, due to crawling error, return a blank tuple
     if soup is None:
         return tuple()
+
+    # Try to get the title of the website
     try:
         title = soup.title.get_text()
-    except:
+    # If one cannot get the title, just assign none to the title
+    except AttributeError:
         title = ""
 
     cur_url_parsed = urlparse(cur_url)
@@ -156,6 +164,8 @@ def recursively_crawl(num_pages: int, url: str):
     count = 0
     queue = []  # Queue for BFS
     parent_links = []
+    canBreak = 0
+    is_init = 1
 
     visited = []  # Visited pages
 
@@ -163,7 +173,7 @@ def recursively_crawl(num_pages: int, url: str):
 
     # num_pages > 0: To ensure we are in the limit
     # queue != []: To ensure the website still have sub-links.
-    while num_pages > 0 and queue != []:
+    while num_pages > 0 and queue != [] and canBreak == 0:
 
         count += 1
 
@@ -203,12 +213,17 @@ def recursively_crawl(num_pages: int, url: str):
         fetch1 = result.fetchone()
 
         if fetch1 is not None:
-            # If the date of last modification is older
+            # Not a valid page
             if fetch1[2] is None and last_modif is None:
                 continue
+            # If the date of last modification is older
             if fetch1[2] >= last_modif:
-                num_pages -= 1
-                continue
+                canBreak = 1
+                print("Page crawling has been completed before! Skip crawling.")
+                if is_init:
+                    break
+                else:
+                    continue
             else:
                 # Delete the original data, then insert new data
                 cursor.execute("DELETE FROM relation WHERE parent_id = ?", (cur_page_id,))
@@ -219,12 +234,18 @@ def recursively_crawl(num_pages: int, url: str):
                 insert_data_into_page_info(cur_page_id, size, last_modif, title)
                 insert_data_into_page_id_word(text)
                 insert_data_into_title_page_id_word(title, cur_page_id)
+                connection.commit()
+                is_init = 0
+                num_pages -= 1
+                continue
 
         insert_data_into_relation(int(cur_page_id), int(parent_page_id))
         insert_data_into_page_info(cur_page_id, size, last_modif, title)
         insert_data_into_id_url(cur_page_id, cur_url)
         insert_data_into_page_id_word(text)
         insert_data_into_title_page_id_word(title, cur_page_id)
+        connection.commit()
+        is_init = 0
         num_pages -= 1
 
 
@@ -233,21 +254,18 @@ def insert_data_into_relation(child, parent):
     cursor.execute("""
         INSERT INTO relation VALUES (?,?)
     """, (child, parent))
-    connection.commit()
 
 
 def insert_data_into_id_url(page_id, url):
     cursor.execute("""
         INSERT INTO id_url VALUES (?,?)
     """, (page_id, url))
-    connection.commit()
 
 
 def insert_data_into_page_info(page_id, size, last_modif, title):
     cursor.execute("""
         INSERT INTO page_info VALUES (?,?,?,?)
     """, (page_id, size, last_modif, title))
-    connection.commit()
 
 
 def insert_data_into_page_id_word(list_of_id):
@@ -270,5 +288,3 @@ def insert_data_into_title_page_id_word(title, page_id):
     cursor.executemany("""
         INSERT INTO title_page_id_word VALUES (?,?)
         """, new_list)
-
-    connection.commit()

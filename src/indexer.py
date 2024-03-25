@@ -47,9 +47,6 @@ def indexer():
         body_text = stemWords(removeStopWords(body_text))
         title_text = stemWords(removeStopWords(title_text))
 
-        # body_text_id = [int(crc32(str.encode(w))) for w in body_text]
-        # title_text_id = [int(crc32(str.encode(w))) for w in title_text]
-
         # Get a list of all words so that we can put it in word_id_word
         all_words = set(body_text + title_text)
 

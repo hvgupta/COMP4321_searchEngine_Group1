@@ -2,6 +2,7 @@ import argparse
 from datetime import datetime
 import sqlite3
 from itertools import chain
+import time
 
 connection = sqlite3.connect('./src/files/database.db')
 
@@ -103,7 +104,7 @@ def create_file_from_db():
             from src.crawler import recursively_crawl
             from src.indexer import indexer
             init_database()
-            recursively_crawl(num_pages=30, url="https://comp4321-hkust.github.io/testpages/testpage.htm")
+            recursively_crawl(num_pages=30, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
             indexer()
             create_file_from_db()
 
@@ -122,10 +123,12 @@ def create_file_from_db():
             file.write("\n")
             file.write(url)
             file.write("\n")
+
             file.write(str(datetime.fromtimestamp(pageinfo[2])) + ", " + str(pageinfo[1]) + "\n")
 
             # Top 10 words
-            list_of_word = cursor.execute("""SELECT word_id, count FROM inverted_idx where page_id = ? order by count desc limit 10 """, (pid,)).fetchall()
+            list_of_word = cursor.execute("""SELECT word_id, count FROM inverted_idx where 
+            page_id = ? order by count desc limit 10 """, (pid,)).fetchall()
 
             for word in list_of_word:
                 keyword = word[0]  # Unpack the word
@@ -137,14 +140,12 @@ def create_file_from_db():
 
             # Child link
             list_of_child_id = cursor.execute("""
-                SELECT child_id FROM relation WHERE parent_id = ?
+                SELECT child_id FROM relation WHERE parent_id = ? limit 10
             """, (pid,)).fetchall()
 
             list_of_child_id = list(chain.from_iterable(list_of_child_id))
 
             for i in range(len(list_of_child_id)):
-                if i >= 10:
-                    break
 
                 child_link = cursor.execute("""
                 SELECT url FROM id_url WHERE page_id = ?
@@ -159,7 +160,7 @@ def main():
 
     parser.add_argument("-n", "--num", dest="NUM_PAGES", default="30",
                         help="Number of pages that will be crawled / indexed")
-    parser.add_argument("-u", "--url", dest="URL", default="https://comp4321-hkust.github.io/testpages/testpage.htm",
+    parser.add_argument("-u", "--url", dest="URL", default="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm",
                         help="The URL that the program will be crawled")
     parser.add_argument("-t", "--test", dest="is_test", action='store_true', required=False,
                         help="Read the database and generate output")
@@ -173,6 +174,7 @@ def main():
     # - The URL that the program will be crawled -
     URL = args.URL
 
+    start_time = time.time()
     if not args.is_test:
         from src.crawler import recursively_crawl
         from src.indexer import indexer
@@ -181,6 +183,7 @@ def main():
         indexer()
     else:
         create_file_from_db()
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 if __name__ == '__main__':
