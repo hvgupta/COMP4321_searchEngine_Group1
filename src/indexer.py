@@ -11,8 +11,6 @@ regex = re.compile('[^a-zA-Z]')
 
 ps = Stemmer()
 
-db = sqlite3.connect(pathlib.Path(__file__).parent/"files/wordCount.db")
-
 with open(pathlib.Path(__file__).parent/'files/stopwords.txt', 'r') as file:
     stopwords = file.read().split()
 
@@ -29,14 +27,14 @@ def tokenize(soup: bsoup) -> list[str]:
         return []
     return removeStopWords(regex.sub(' ', soup.find("body").text).split())
 
-def inverseIndexCreator(document:bsoup, documentID:int) -> None:
+def inverseIndexCreator(cursor:sqlite3.Cursor ,document:bsoup, documentID:int) -> None:
     stemmedDocument:list[str] = stemWords(tokenize(document))
     
     uniqueWords: np.ndarray[str]
     wordCount: np.ndarray[int]
     uniqueWords, wordCount = np.unique(stemmedDocument, return_counts=True)
     
-    currentVocab: np.ndarray[str] = np.array(get_column_names(db, "wordCount"))
+    currentVocab: np.ndarray[str] = np.array(get_column_names(cursor, "wordCount"))
     truthTable: np.ndarray[bool] = np.isin(uniqueWords, currentVocab)
     
     notInVocab: np.ndarray[str] = uniqueWords[~truthTable]
@@ -47,7 +45,9 @@ def inverseIndexCreator(document:bsoup, documentID:int) -> None:
     inVocabCount: np.ndarray[int] = wordCount[truthTable]
     wordDict: dict[str, int] = dict(zip(inVocab, inVocabCount))
 
-    insert(db, "wordCount", documentID,wordDict)
+    insert(cursor, "wordCount", documentID,wordDict)
+    
+    
     
     
     
