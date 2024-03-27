@@ -75,7 +75,8 @@ def init_database():
             CREATE TABLE page_id_word (
                 page_id INTEGER,
                 word TEXT,
-                PRIMARY KEY (page_id),
+                position INTEGER,
+                PRIMARY KEY (position, word),
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id)
             )""")
 
@@ -83,7 +84,8 @@ def init_database():
             CREATE TABLE title_page_id_word (
                 page_id INTEGER,
                 word TEXT,
-                PRIMARY KEY (page_id),
+                position INTEGER,
+                PRIMARY KEY (position, word),
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id)
             )""")
 

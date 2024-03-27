@@ -7,6 +7,7 @@ from email.utils import parsedate_to_datetime
 from datetime import datetime
 import re
 from pathlib import Path
+import src.sqlAPI as sqlAPI
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -181,12 +182,19 @@ def recursively_crawl(num_pages: int, url: str):
                 insert_data_into_id_url(cur_page_id, cur_url)
                 insert_data_into_page_id_word(text)
                 insert_data_into_title_page_id_word(title, cur_page_id)
-
-        insert_data_into_relation(int(cur_page_id), int(parent_page_id))
-        insert_data_into_page_info(cur_page_id, size, last_modif, title)
-        insert_data_into_id_url(cur_page_id, cur_url)
-        insert_data_into_page_id_word(text)
-        insert_data_into_title_page_id_word(title, cur_page_id)
+                
+                
+        sqlAPI.insert(cursor, "relation", [cur_page_id, parent_page_id])
+        sqlAPI.insert(cursor, "page_info", [cur_page_id, size, last_modif, title])
+        sqlAPI.insert(cursor, "id_url", [cur_page_id, cur_url])
+        sqlAPI.insert(cursor, "page_id_word", text)
+        sqlAPI.insert(cursor, "title_page_id_word", [cur_page_id, title])
+        # insert_data_into_relation(int(cur_page_id), int(parent_page_id))
+        # insert_data_into_page_info(cur_page_id, size, last_modif, title)
+        # insert_data_into_id_url(cur_page_id, cur_url)
+        # insert_data_into_page_id_word(text)
+        # insert_data_into_title_page_id_word(title, cur_page_id)
+        connection.commit()
         num_pages -= 1
 
 

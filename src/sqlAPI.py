@@ -9,12 +9,12 @@ def insert(db:sqlite3.Cursor, table_name: str, data:np.ndarray) -> None:
         return
 
     if (data.ndim == 1): # in case if only one value is being supplied
-        data = np.expand_dims(data, axis=1)
+        data = np.expand_dims(data, axis=0)
     
     numArguements:int = data.shape[1]
     
-    db.executemany(f"INSERT INTO {table_name} (VALUES (?{",?"*(numArguements-1)})",data)
-    db.commit()
+    placeholders = ', '.join('?' * numArguements)
+    db.executemany(f"INSERT INTO {table_name} VALUES ({placeholders})", data.tolist())
 
 
 def get_column_names(db: sqlite3.Cursor, table_name: str) -> list[str]:
@@ -30,4 +30,3 @@ def update_value(db: sqlite3.Cursor, table_name: str, documentId:int, wordDict: 
     arguements:str = ", ".join([f"""{key} = {wordDict[key]}""" for key in wordDict.keys()])
     
     db.execute(f"UPDATE {table_name} SET {arguements} WHERE documentId = {documentId}")
-    db.commit()
