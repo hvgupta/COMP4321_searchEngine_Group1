@@ -5,13 +5,12 @@ import crawler
 from sqlAPI import *
 import numpy as np
 import pathlib
+from zlib import crc32
 
 # Remove all punctuations that are not letters.
 regex = re.compile('[^a-zA-Z]')
 
 ps = Stemmer()
-
-db = sqlite3.connect('files/database.db')
 
 with open(pathlib.Path(__file__).parent/'files/stopwords.txt', 'r') as file:
     stopwords = file.read().split()
@@ -34,22 +33,12 @@ def inverseIndexCreator(cursor:sqlite3.Cursor ,document:bsoup, documentID:int) -
     
     uniqueWords: np.ndarray[str]
     wordCount: np.ndarray[int]
-    uniqueWords, wordCount = np.unique(stemmedDocument, return_counts=True)
-    
-    currentVocab: np.ndarray[str] = np.array(get_column_names(cursor, "wordCount"))
-    truthTable: np.ndarray[bool] = np.isin(uniqueWords, currentVocab)
-    
-    notInVocab: np.ndarray[str] = uniqueWords[~truthTable]
-    notInVocabCount: np.ndarray[int] = wordCount[~truthTable]
-    outWordDict: dict[str, int] = dict(zip(notInVocab, notInVocabCount))
-    
-    inVocab: np.ndarray[str] = uniqueWords[truthTable]
-    inVocabCount: np.ndarray[int] = wordCount[truthTable]
-    wordDict: dict[str, int] = dict(zip(inVocab, inVocabCount))
+    uniqueWords, wordCounts = np.unique(stemmedDocument, return_counts=True)
 
-    insert(cursor, "wordCount", documentID,wordDict)
+    wordCount:np.ndarray[int] = np.expand_dims(wordCounts, axis=1)
+    wordID:np.ndarray[int] = np.expand_dims(np.array([crc32(str.encode(word)) for word in uniqueWords]),axis=1)
+    documentID:np.ndarray = np.full((uniqueWords.size,1), documentID)
     
+    data:np.ndarray = np.hstack((documentID, wordID, wordCount)).tolist()
     
-    
-    
-    
+    insert(cursor, "inverted_idx", data)

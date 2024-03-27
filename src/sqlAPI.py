@@ -1,16 +1,19 @@
 import sqlite3
+import numpy as np
 
-def insert(db:sqlite3.Cursor, table_name: str, documentId:int ,wordDict:dict[str,str]) -> None:
-    if len(wordDict) == 0:
+def insert(db:sqlite3.Cursor, table_name: str, data:np.ndarray) -> None:
+    if (type(data) == list):
+        data = np.array(data)
+    
+    if data.size == 0:
         return
+
+    if (data.ndim == 1): # in case if only one value is being supplied
+        data = np.expand_dims(data, axis=1)
     
-    # add the part in which the words which are not in the database are mentioned (with their ID)
+    numArguements:int = data.shape[1]
     
-    arguements:str = ",".join(wordDict.keys())
-    values:str = ",".join(wordDict.values())
-    
-    
-    db.execute(f"INSERT INTO {table_name} (documentId,{arguements}) VALUES ({documentId},{values})")
+    db.executemany(f"INSERT INTO {table_name} (VALUES (?{",?"*(numArguements-1)})",data)
     db.commit()
 
 
