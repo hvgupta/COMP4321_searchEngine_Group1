@@ -6,6 +6,9 @@ import time
 
 connection = sqlite3.connect('./src/files/database.db')
 
+with open("./src/files/stopwords.txt", 'r') as file:
+    stopwords = file.read().split()
+
 cursor = connection.cursor()
 
 
@@ -129,13 +132,21 @@ def create_file_from_db():
                 GROUP BY word
                 ORDER BY
                     Frequency DESC
-                LIMIT 10 """, (pid,)).fetchall()
+                 """, (pid,)).fetchall()
+
+            number = 0
 
             for word in list_of_word:
+                if number > 9:
+                    break
                 keyword = word[0]  # Unpack the word
                 count = word[1]
 
+                if keyword in stopwords:
+                    continue
+
                 file.write(keyword + " " + str(count) + "; ")
+                number = number + 1
 
             file.write("\n")
 
@@ -147,7 +158,6 @@ def create_file_from_db():
             list_of_child_id = list(chain.from_iterable(list_of_child_id))
 
             for i in range(len(list_of_child_id)):
-
                 child_link = cursor.execute("""
                 SELECT url FROM id_url WHERE page_id = ?
             """, (list_of_child_id[i],)).fetchone()[0]
