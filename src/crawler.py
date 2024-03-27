@@ -42,7 +42,7 @@ async def get_soup(url: str) -> (bsoup, str):
     # We will skip pdf and mailto
     if url[-3:] == "pdf" or url[0:6] == "mailto":
         return
-    last_modif = None
+
     if "https://" not in url and "http://" not in url:
         url = "https://" + url
 
@@ -60,7 +60,7 @@ async def get_soup(url: str) -> (bsoup, str):
             last_modif = parsedate_to_datetime((request.headers['Date']))
             last_modif = int(datetime.timestamp(last_modif))
 
-    except TimeoutException as e:
+    except TimeoutException:
         print("Crawling the page " + url + " exceed 5 second! Skipping crawling the page!")
         return
 

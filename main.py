@@ -60,31 +60,26 @@ def init_database():
         cursor.execute("""
             CREATE TABLE page_id_word (
               page_id INTEGER,
-              word TEXT,
-              UNIQUE (page_id, word) ON CONFLICT IGNORE
-
+              word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE page_id_word_stem (
               page_id INTEGER,
-              word TEXT,
-              UNIQUE (page_id, word) ON CONFLICT IGNORE
+              word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word_stem (
               page_id INTEGER,
-              word TEXT,
-              UNIQUE (page_id, word) ON CONFLICT IGNORE
+              word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word (
               page_id INTEGER,
-              word TEXT,
-              UNIQUE (page_id, word) ON CONFLICT IGNORE
-            )""")
+              word TEXT
+                          )""")
 
         connection.commit()
 
@@ -127,8 +122,14 @@ def create_file_from_db():
             file.write(str(datetime.fromtimestamp(pageinfo[2])) + ", " + str(pageinfo[1]) + "\n")
 
             # Top 10 words
-            list_of_word = cursor.execute("""SELECT word_id, count FROM inverted_idx where 
-            page_id = ? order by count desc limit 10 """, (pid,)).fetchall()
+            list_of_word = cursor.execute("""
+                SELECT word, Count(word) AS Frequency
+                FROM page_id_word
+                WHERE page_id = ?
+                GROUP BY word
+                ORDER BY
+                    Frequency DESC
+                LIMIT 10 """, (pid,)).fetchall()
 
             for word in list_of_word:
                 keyword = word[0]  # Unpack the word
