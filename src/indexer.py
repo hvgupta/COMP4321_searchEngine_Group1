@@ -1,14 +1,11 @@
 from nltk.stem import PorterStemmer as Stemmer
-import re
-from bs4 import BeautifulSoup as bsoup
 import crawler
 from sqlAPI import *
-import numpy as np
 import pathlib
 from zlib import crc32
-
-# Remove all punctuations that are not letters.
-regex = re.compile('[^a-zA-Z]')
+from pathlib import Path
+from itertools import chain
+from collections import Counter
 
 ps = Stemmer()
 
