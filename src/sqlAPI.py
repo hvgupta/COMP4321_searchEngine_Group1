@@ -31,3 +31,11 @@ def update_value(db: sqlite3.Cursor, table_name: str, updateDict:dict[str,str], 
     values:str = ",".join([f"{key} = '{value}'" for key, value in updateDict.items()])
     
     db.execute(f"UPDATE {table_name} SET {values} WHERE {cond}")
+    
+def delete_from_table(db: sqlite3.Cursor, table_name: str, conditions: dict[str,str]) -> None:
+    if len(conditions) == 0:
+        return
+    
+    cond:str = ",".join([f"{key} = '{value}'" for key, value in conditions.items()])
+    
+    db.execute(f"DELETE FROM {table_name} WHERE {cond}")

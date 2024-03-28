@@ -197,6 +197,8 @@ def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
         return
     count:int = 0
     
+    relationArrayTrack:list[list[str]]
+    
     while (count <= num_pages and len(queue) > 0):
         
         cur_url = queue.pop(0)
@@ -212,35 +214,27 @@ def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
         parentID, title, size, text = getInfo(soup,cur_url)
         
         fetch = cursor.execute("SELECT * FROM page_info WHERE page_id=?", (parentID,)).fetchone()
-
-        """
-        if (
-            there already exists an entry with the same id 
-            AND 
-            the last modified date of the entry is later or same than the one fetched
-            ), 
-        therefore is no need to update the page
-        """
+        
         if fetch is not None and fetch[2] >= last_modif:
             continue
         elif fetch is not None:
-            #update
-            condition:dict[str,str] = {"page_id": parentID}
-            values:dict[str,str] = {"size": size, "last_modif": last_modif, "title": title}
-            sqlAPI.updateValueInTable(cursor, "page_info", values, condition)
-            pass
-        else:
-            sqlAPI.insertIntoTable(cursor, "page_info", [parentID, size, last_modif, title])
-            sqlAPI.insertIntoTable(cursor, "id_url", [parentID, cur_url])
-            updateInvertedIndex(cursor, soup, parentID)
+            #delete the original data, and then reinsert the new data
+            sqlAPI.delete_from_table(cursor, "relation", {"parent_id":parentID})
+
+        sqlAPI.insertIntoTable(cursor, "page_info", [parentID, size, last_modif, title])
+        sqlAPI.insertIntoTable(cursor, "id_url", [parentID, cur_url])
+        updateInvertedIndex(cursor, soup, parentID)
+        
+        for url in child_urls:
             
-            for url in child_urls:
-                
-                childId:int = getWebsiteCRC(url)
-                sqlAPI.insertIntoTable(cursor, "relation", [childId, parentID])
-                
-                if url not in visited and url not in queue:
-                    queue.append(url)
+            relationArrayTrack.append([parentID, getWebsiteCRC(url)])
+            
+            if url not in visited and url not in queue:
+                queue.append(url)
+                num_pages -= 1
+        
+    while(len(relationArrayTrack) > 0): sqlAPI.insertIntoTable(cursor, "relation", relationArrayTrack.pop(0))
+    
 
 
 def recursively_crawl(num_pages: int, url: str):
