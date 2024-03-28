@@ -211,21 +211,36 @@ def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
         
         parentID, title, size, text = getInfo(soup,cur_url)
         
-        sqlAPI.insert(cursor, "page_info", [parentID, size, last_modif, title])
-        sqlAPI.insert(cursor, "id_url", [parentID, cur_url])
-        updateInvertedIndex(cursor, soup, parentID)
-        
-        for url in child_urls:
-            
-            childId:int = getWebsiteCRC(url)
-            sqlAPI.insert(cursor, "relation", [childId, parentID])
-            
-            if url not in visited and url not in queue:
-                queue.append(url)
-        
+        fetch = cursor.execute("SELECT * FROM page_info WHERE page_id=?", (parentID,)).fetchone()
 
-       
-    
+        """
+        if (
+            there already exists an entry with the same id 
+            AND 
+            the last modified date of the entry is later or same than the one fetched
+            ), 
+        therefore is no need to update the page
+        """
+        if fetch is not None and fetch[2] >= last_modif:
+            continue
+        elif fetch is not None:
+            #update
+            condition:dict[str,str] = {"page_id": parentID}
+            values:dict[str,str] = {"size": size, "last_modif": last_modif, "title": title}
+            sqlAPI.updateValueInTable(cursor, "page_info", values, condition)
+            pass
+        else:
+            sqlAPI.insertIntoTable(cursor, "page_info", [parentID, size, last_modif, title])
+            sqlAPI.insertIntoTable(cursor, "id_url", [parentID, cur_url])
+            updateInvertedIndex(cursor, soup, parentID)
+            
+            for url in child_urls:
+                
+                childId:int = getWebsiteCRC(url)
+                sqlAPI.insertIntoTable(cursor, "relation", [childId, parentID])
+                
+                if url not in visited and url not in queue:
+                    queue.append(url)
 
 
 def recursively_crawl(num_pages: int, url: str):
@@ -308,11 +323,11 @@ def recursively_crawl(num_pages: int, url: str):
                 continue
                 
                 
-        sqlAPI.insert(cursor, "relation", [cur_page_id, parent_page_id])
-        sqlAPI.insert(cursor, "page_info", [cur_page_id, size, last_modif, title])
-        sqlAPI.insert(cursor, "id_url", [cur_page_id, cur_url])
-        sqlAPI.insert(cursor, "page_id_word", text)
-        sqlAPI.insert(cursor, "title_page_id_word", [cur_page_id, title])
+        sqlAPI.insertIntoTable(cursor, "relation", [cur_page_id, parent_page_id])
+        sqlAPI.insertIntoTable(cursor, "page_info", [cur_page_id, size, last_modif, title])
+        sqlAPI.insertIntoTable(cursor, "id_url", [cur_page_id, cur_url])
+        sqlAPI.insertIntoTable(cursor, "page_id_word", text)
+        sqlAPI.insertIntoTable(cursor, "title_page_id_word", [cur_page_id, title])
         is_init = 0
         connection.commit()
         num_pages -= 1

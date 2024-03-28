@@ -1,7 +1,7 @@
 import sqlite3
 import numpy as np
 
-def insert(db:sqlite3.Cursor, table_name: str, data:np.ndarray) -> None:
+def insertIntoTable(db:sqlite3.Cursor, table_name: str, data:np.ndarray) -> None:
     if (type(data) == list):
         data = np.array(data)
     
@@ -23,10 +23,11 @@ def get_column_names(db: sqlite3.Cursor, table_name: str) -> list[str]:
     columns = [column[1] for column in cursor.fetchall()]
     return columns
 
-def update_value(db: sqlite3.Cursor, table_name: str, documentId:int, wordDict: dict[str,str]) -> None:
-    if len(wordDict) == 0:
+def update_value(db: sqlite3.Cursor, table_name: str, updateDict:dict[str,str], conditions: dict[str,str]) -> None:
+    if len(conditions) == 0:
         return
     
-    arguements:str = ", ".join([f"""{key} = {wordDict[key]}""" for key in wordDict.keys()])
+    cond:str = ",".join([f"{key} = '{value}'" for key, value in conditions.items()])
+    values:str = ",".join([f"{key} = '{value}'" for key, value in updateDict.items()])
     
-    db.execute(f"UPDATE {table_name} SET {arguements} WHERE documentId = {documentId}")
+    db.execute(f"UPDATE {table_name} SET {values} WHERE {cond}")

@@ -20,8 +20,8 @@ def init_database():
                 child_id INTEGER,
                 parent_id INTEGER,
                 PRIMARY KEY (child_id, parent_id), 
-                FOREIGN KEY (child_id) REFERENCES page_info(page_id),
-                FOREIGN KEY (parent_id) REFERENCES page_info(page_id)
+                FOREIGN KEY (child_id) REFERENCES page_info(page_id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         # the purpose of this table is to ensure 2NF form
@@ -30,7 +30,7 @@ def init_database():
                 page_id INTEGER,
                 url TEXT UNIQUE,
                 PRIMARY KEY (page_id),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id)
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         # the purpose of this table is to create a map between word and its ID
@@ -48,8 +48,8 @@ def init_database():
                 word_id INTEGER,
                 count INTEGER,
                 PRIMARY KEY (page_id, word_id),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id),
-                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id)
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE,
+                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE
             )""")
 
         # this table is the inverted index for the title of the page
@@ -59,8 +59,8 @@ def init_database():
                 word_id INTEGER,
                 count INTEGER,
                 PRIMARY KEY (page_id, word_id),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id),
-                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id)
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE,
+                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE
             )""")
 
         # the purpose of this table is to map the basic information about the page to its ID
@@ -79,19 +79,21 @@ def init_database():
                 word TEXT,
                 position INTEGER,
                 PRIMARY KEY (position, word),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id)
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         cursor.execute("""
             CREATE TABLE page_id_word_stem (
               page_id INTEGER,
-              word TEXT
+              word TEXT,
+              Foreign Key (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word_stem (
-              page_id INTEGER,
-              word TEXT
+                page_id INTEGER,
+                word TEXT,
+                Foreign Key (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         cursor.execute("""
@@ -100,7 +102,7 @@ def init_database():
                 word TEXT,
                 position INTEGER,
                 PRIMARY KEY (position, word),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id)
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         connection.commit()
