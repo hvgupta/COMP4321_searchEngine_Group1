@@ -11,7 +11,7 @@ from pathlib import Path
 import src.sqlAPI as sqlAPI
 import signal
 from contextlib import contextmanager
-from src.indexer import updateInvertedIndex
+from src.indexer import updateInvertedIndex, updateTitleInvertedIndex
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -224,6 +224,9 @@ def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
         sqlAPI.insertIntoTable(cursor, "page_info", [parentID, size, last_modif, title])
         sqlAPI.insertIntoTable(cursor, "id_url", [parentID, cur_url])
         updateInvertedIndex(cursor, soup, parentID)
+        updateTitleInvertedIndex(cursor, soup, parentID)
+        sqlAPI.insertIntoTable(cursor, "page_id_word", [parentID, text.split()])
+        sqlAPI.insertIntoTable(cursor, "title_page_id_word", [parentID, title.split()])
         
         for url in child_urls:
             
