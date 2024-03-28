@@ -11,6 +11,7 @@ from pathlib import Path
 import src.sqlAPI as sqlAPI
 import signal
 from contextlib import contextmanager
+from src.indexer import updateInvertedIndex
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -49,8 +50,8 @@ async def get_soup(url: str) -> (bsoup, str):
 
     # Try to get the data. If failed, then the program terminates.
     try:
-        with time_limit(5):
-            request = requests.get(url)
+        # with time_limit(10):
+        request = requests.get(url)
         statCode = request.status_code
         try:
             last_modif = parsedate_to_datetime((request.headers['last-modified']))
@@ -160,6 +161,72 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
 
     return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, page_id_text
 
+def getWebsiteCRC(url:str)->int:
+    urlParsed = urlparse(url)
+    urlParsed = (urlParsed.scheme + "://" + urlParsed.netloc + urlParsed.path)
+    return crc32(str.encode(urlParsed))
+
+def getInfo(website:bsoup, url:str)->tuple[int, str, int, str]:
+    
+    if website is None:
+        return tuple()
+    
+    title:str
+    try:
+        title = website.title.get_text()
+    # If one cannot get the title, just assign none to the title
+    except AttributeError:
+        title = ""
+    
+    text:str
+    try:
+        text = website.get_text()
+    except AttributeError:
+        text = ""
+    text = re.sub("[^a-zA-Z]+", " ", text)
+    
+    parentID:int = getWebsiteCRC(url)
+    size:int = len(text.split())
+    
+    return parentID, title, size, text
+    
+
+def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
+    
+    if (len(queue) == 0):
+        return
+    count:int = 0
+    
+    while (count <= num_pages and len(queue) > 0):
+        
+        cur_url = queue.pop(0)
+        visited.append(cur_url)
+        
+        try:
+            soup, last_modif = asyncio.run(get_soup(cur_url))
+        except TypeError:
+            return
+        
+        child_urls:list[str] = get_sub_link(cur_url, soup)
+        
+        parentID, title, size, text = getInfo(soup,cur_url)
+        
+        sqlAPI.insert(cursor, "page_info", [parentID, size, last_modif, title])
+        sqlAPI.insert(cursor, "id_url", [parentID, cur_url])
+        updateInvertedIndex(cursor, soup, parentID)
+        
+        for url in child_urls:
+            
+            childId:int = getWebsiteCRC(url)
+            sqlAPI.insert(cursor, "relation", [childId, parentID])
+            
+            if url not in visited and url not in queue:
+                queue.append(url)
+        
+
+       
+    
+
 
 def recursively_crawl(num_pages: int, url: str):
     count = 0
@@ -246,12 +313,6 @@ def recursively_crawl(num_pages: int, url: str):
         sqlAPI.insert(cursor, "id_url", [cur_page_id, cur_url])
         sqlAPI.insert(cursor, "page_id_word", text)
         sqlAPI.insert(cursor, "title_page_id_word", [cur_page_id, title])
-        # insert_data_into_relation(int(cur_page_id), int(parent_page_id))
-        # insert_data_into_page_info(cur_page_id, size, last_modif, title)
-        # insert_data_into_id_url(cur_page_id, cur_url)
-        # insert_data_into_page_id_word(text)
-        # insert_data_into_title_page_id_word(title, cur_page_id)
-        connection.commit()
         is_init = 0
         connection.commit()
         num_pages -= 1

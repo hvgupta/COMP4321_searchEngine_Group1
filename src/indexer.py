@@ -1,11 +1,11 @@
 from nltk.stem import PorterStemmer as Stemmer
-import crawler
-from sqlAPI import *
+import re
+from bs4 import BeautifulSoup as bsoup
+from src.sqlAPI import *
+import numpy as np
 import pathlib
 from zlib import crc32
-from pathlib import Path
-from itertools import chain
-from collections import Counter
+import regex
 
 ps = Stemmer()
 
@@ -25,7 +25,7 @@ def tokenize(soup: bsoup) -> list[str]:
         return []
     return removeStopWords(regex.sub(' ', soup.find("body").text).split())
 
-def inverseIndexCreator(cursor:sqlite3.Cursor ,document:bsoup, documentID:int) -> None:
+def updateInvertedIndex(cursor:sqlite3.Cursor ,document:bsoup, documentID:int) -> None:
     stemmedDocument:list[str] = stemWords(tokenize(document))
     
     uniqueWords: np.ndarray[str]

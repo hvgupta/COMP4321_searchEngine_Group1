@@ -200,10 +200,10 @@ def main():
     start_time = time.time()
     if not args.is_test:
         from src.crawler import recursively_crawl
-        from src.indexer import indexer
+        from src.indexer import updateInvertedIndex
         init_database()
         recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
-        indexer()
+        
     else:
         create_file_from_db()
     print("--- %s seconds ---" % (time.time() - start_time))
