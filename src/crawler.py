@@ -38,10 +38,10 @@ def time_limit(seconds):
         signal.alarm(0)
 
 
-async def get_soup(url: str) -> (bsoup, str):
+async def get_soup(url: str) -> (bsoup, int, int):
     # We will skip pdf and mailto
     if url[-3:] == "pdf" or url[0:6] == "mailto":
-        return
+        return (bsoup(""), 0, 0)
 
     if "https://" not in url and "http://" not in url:
         url = "https://" + url
@@ -62,27 +62,27 @@ async def get_soup(url: str) -> (bsoup, str):
 
     except TimeoutException:
         print("Crawling the page " + url + " exceed 5 second! Skipping crawling the page!")
-        return
+        return (bsoup(""), 0, 408)
 
     # Otherwise
     except:
         print("Error occurred when crawling the page " + url + ". Skipping")
-        return
+        return (bsoup(""), 0, 500)
 
     # Check if the request is successful or not.
     # If not then we assume the website is invalid, or the server is not responding.
     if statCode != -1:
         if statCode not in range(200, 399):
-            print("Error code " + str(statCode) + " for webpage " + url + ". Please check your input and try again.")
-            return
+            print("Error code " + str(statCode) + " for webpage " + url + "!")
+            return (bsoup(""), 0, statCode)
     else:
         print("Page crawling error for page " + url + "! Skipping")
-        return
+        return (bsoup(""), 0, statCode)
 
     response = request.text
     soup = bsoup(response, "lxml")
 
-    return soup, last_modif
+    return soup, last_modif, statCode
 
 
 def get_sub_link(url, soup):
@@ -186,10 +186,7 @@ def recursively_crawl(num_pages: int, url: str):
 
         visited.append(cur_url)
 
-        try:
-            soup, last_modif = asyncio.run(get_soup(cur_url))
-        except TypeError:
-            continue
+        soup, last_modif, stat = asyncio.run(get_soup(cur_url))
 
         parent_link = cur_url
 
@@ -203,6 +200,16 @@ def recursively_crawl(num_pages: int, url: str):
 
         cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, text = (
             get_info(cur_url, soup, last_modif, par_link))
+
+
+
+        # If the statCode is 0 (i.e. The website returns nothing), or error code falls into [400, 499] (Error)
+        if stat == 0 or stat in range(400,499):
+            insert_data_into_relation(int(cur_page_id), int(parent_page_id))
+            insert_data_into_page_info(cur_page_id, size, last_modif, title)
+            insert_data_into_id_url(cur_page_id, cur_url)
+            connection.commit()
+            continue
 
         # If the database has the exact item (Which is page_id), and the last modification date is newer / the same
         # as the crawled date, skip adding to database.
@@ -247,6 +254,7 @@ def recursively_crawl(num_pages: int, url: str):
         connection.commit()
         is_init = 0
         num_pages -= 1
+    connection.commit()
 
 
 def insert_data_into_relation(child, parent):
