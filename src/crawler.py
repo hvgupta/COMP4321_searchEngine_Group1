@@ -153,7 +153,7 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
 
     size = soup.find("meta", attrs={"name": "size"})
     if size is None:
-        size = len(text)
+        size = sum(len(word) for word in text)
 
     page_id_text = list(zip([cur_page_id] * len(text), text))
 
@@ -197,14 +197,15 @@ def recursively_crawl(num_pages: int, url: str):
             if url not in visited and url not in queue:
                 queue.append(url)
                 parent_links.append(parent_link)
+            elif url in visited:
+                insert_data_into_relation(crc32(str.encode(url)), crc32(str.encode(parent_link)))
+                connection.commit()
 
         cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, text = (
             get_info(cur_url, soup, last_modif, par_link))
 
-
-
         # If the statCode is 0 (i.e. The website returns nothing), or error code falls into [400, 499] (Error)
-        if stat == 0 or stat in range(400,499):
+        if stat == 0 or stat in range(400, 499):
             insert_data_into_relation(int(cur_page_id), int(parent_page_id))
             insert_data_into_page_info(cur_page_id, size, last_modif, title)
             insert_data_into_id_url(cur_page_id, cur_url)
