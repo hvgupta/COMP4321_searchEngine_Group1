@@ -82,7 +82,7 @@ def init_database():
             CREATE TABLE title_page_id_word (
               page_id INTEGER,
               word TEXT
-                          )""")
+            )""")
 
         connection.commit()
 
