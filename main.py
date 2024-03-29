@@ -14,6 +14,24 @@ cursor = connection.cursor()
 # Init a database, when there is a conflict, we IGNORE those contents
 def init_database():
     try:
+        # the purpose of this table is to map the basic information about the page to its ID
+        cursor.execute("""
+            CREATE TABLE page_info (
+                page_id INTEGER,
+                size INTEGER,
+                last_mod_date INTEGER,
+                title TEXT,
+                PRIMARY KEY (page_id)
+            )""")
+
+        # the purpose of this table is to create a map between word and its ID
+        cursor.execute("""
+            CREATE TABLE word_id_word (
+                word_id INTEGER,
+                word TEXT,
+                PRIMARY KEY (word_id)
+            )""")
+        
         # the purpose of this table is to track the parent-child relationship between pages. (is done through link re-direction)
         cursor.execute("""
             CREATE TABLE relation (
@@ -33,44 +51,24 @@ def init_database():
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
-        # the purpose of this table is to create a map between word and its ID
-        cursor.execute("""
-            CREATE TABLE word_id_word (
-                word_id INTEGER,
-                word TEXT,
-                PRIMARY KEY (word_id)
-            )""")
-
         # this table is the inverted index for the body of the page
         cursor.execute("""
             CREATE TABLE body_inverted_idx (
                 page_id INTEGER,
-                word_id INTEGER,
+                stem_word_id INTEGER,
                 count INTEGER,
-                PRIMARY KEY (page_id, word_id),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE,
-                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE
+                PRIMARY KEY (page_id, stem_word_id),
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         # this table is the inverted index for the title of the page
         cursor.execute("""
             CREATE TABLE title_inverted_idx (
                 page_id INTEGER,
-                word_id INTEGER,
+                stem_word_id INTEGER,
                 count INTEGER,
-                PRIMARY KEY (page_id, word_id),
-                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE,
-                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE
-            )""")
-
-        # the purpose of this table is to map the basic information about the page to its ID
-        cursor.execute("""
-            CREATE TABLE page_info (
-                page_id INTEGER,
-                size INTEGER,
-                last_mod_date INTEGER,
-                title TEXT,
-                PRIMARY KEY (page_id)
+                PRIMARY KEY (page_id, stem_word_id),
+                FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         cursor.execute("""
@@ -78,7 +76,7 @@ def init_database():
                 word_id INTEGER,
                 page_id INTEGER,
                 position INTEGER,
-                PRIMARY KEY (word_id, page_id),
+                PRIMARY KEY (page_id,position),
                 FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE,
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
@@ -88,7 +86,7 @@ def init_database():
                 word_id INTEGER,
                 page_id INTEGER,
                 position INTEGER,
-                PRIMARY KEY (word_id, page_id),
+                PRIMARY KEY (page_id,position),
                 FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE,
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")

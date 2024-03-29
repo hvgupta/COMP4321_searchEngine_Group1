@@ -211,12 +211,13 @@ def recursively_crawl1(num_pages: int, url: str):
             return
         
         child_urls:list[str] = get_sub_link(cur_url, soup)
+        child_urls:list[str] = list(set(child_urls))
         
         parentID, title, size, body = getInfo(soup,cur_url)
         
         fetch = cursor.execute("SELECT * FROM page_info WHERE page_id=?", (parentID,)).fetchall()
         
-        if len(fetch) > 0 and fetch[2] >= last_modif:
+        if len(fetch) > 0 and fetch[0][2] >= last_modif:
             continue
         elif (len(fetch) > 0):
             #delete the original data, and then reinsert the new data
@@ -239,9 +240,10 @@ def recursively_crawl1(num_pages: int, url: str):
             
             if url not in visited and url not in queue:
                 queue.append(url)
-                num_pages -= 1
+                count += 1
         
-    while(len(relationArrayTrack) > 0): sqlAPI.insertIntoTable(cursor, "relation", relationArrayTrack.pop(0))
+    sqlAPI.insertIntoTable(cursor, "relation", relationArrayTrack)
+    connection.commit()
 
 def recursively_crawl(num_pages: int, url: str):
     count = 0
