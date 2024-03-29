@@ -43,7 +43,7 @@ def init_database():
 
         # this table is the inverted index for the body of the page
         cursor.execute("""
-            CREATE TABLE inverted_idx (
+            CREATE TABLE body_inverted_idx (
                 page_id INTEGER,
                 word_id INTEGER,
                 count INTEGER,
@@ -74,30 +74,22 @@ def init_database():
             )""")
 
         cursor.execute("""
-            CREATE TABLE page_id_word (
+            CREATE TABLE body_page_id_word (
+                word_id INTEGER,
                 page_id INTEGER,
-                word TEXT,
+                position INTEGER,
+                PRIMARY KEY (word_id, page_id),
+                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE,
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
         cursor.execute("""
-            CREATE TABLE page_id_word_stem (
-              page_id INTEGER,
-              word TEXT,
-              Foreign Key (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
-            )""")
-
-        cursor.execute("""
-            CREATE TABLE title_page_id_word_stem (
-                page_id INTEGER,
-                word TEXT,
-                Foreign Key (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
-            )""")
-
-        cursor.execute("""
             CREATE TABLE title_page_id_word (
+                word_id INTEGER,
                 page_id INTEGER,
-                word TEXT,
+                position INTEGER,
+                PRIMARY KEY (word_id, page_id),
+                FOREIGN KEY (word_id) REFERENCES word_id_word(word_id) ON DELETE CASCADE,
                 FOREIGN KEY (page_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
@@ -198,7 +190,7 @@ def main():
     start_time = time.time()
     if not args.is_test:
         from src.crawler import recursively_crawl
-        from src.indexer import updateInvertedIndex
+        from src.indexer import insertInfoInvIdxTable
         init_database()
         recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
         
