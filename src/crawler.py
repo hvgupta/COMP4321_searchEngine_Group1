@@ -38,10 +38,10 @@ def time_limit(seconds):
         signal.alarm(0)
 
 
-async def get_soup(url: str) -> (bsoup, int, int):
+async def get_soup(url: str) -> (bsoup, int, int, int):
     # We will skip pdf and mailto
     if url[-3:] == "pdf" or url[0:6] == "mailto":
-        return (bsoup(""), 0, 0)
+        return bsoup(""), 0, 0, 0
 
     if "https://" not in url and "http://" not in url:
         url = "https://" + url
@@ -62,27 +62,33 @@ async def get_soup(url: str) -> (bsoup, int, int):
 
     except TimeoutException:
         print("Crawling the page " + url + " exceed 5 second! Skipping crawling the page!")
-        return (bsoup(""), 0, 408)
+        return bsoup(""), 0, 0, 408
 
     # Otherwise
     except:
         print("Error occurred when crawling the page " + url + ". Skipping")
-        return (bsoup(""), 0, 500)
+        return bsoup(""), 0, 0, 500
 
     # Check if the request is successful or not.
     # If not then we assume the website is invalid, or the server is not responding.
     if statCode != -1:
         if statCode not in range(200, 399):
             print("Error code " + str(statCode) + " for webpage " + url + "!")
-            return (bsoup(""), 0, statCode)
+            return bsoup(""), 0, statCode
     else:
         print("Page crawling error for page " + url + "! Skipping")
-        return (bsoup(""), 0, statCode)
+        return bsoup(""), 0, 0, statCode
 
     response = request.text
     soup = bsoup(response, "lxml")
 
-    return soup, last_modif, statCode
+    # Try to get the size of the page
+    try:
+        size = request.headers['content-length']
+    except KeyError:
+        size = len(request.content)
+
+    return soup, last_modif, size, statCode
 
 
 def get_sub_link(url, soup):
@@ -146,18 +152,14 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
     text = soup.get_text().split()  # get list of strings
 
     for i in range(len(text)):
-        text[i] = re.sub("[^a-zA-Z]+", "", text[i])
+        text[i] = re.sub("[^a-zA-Z]+", "", text[i]).lower()
 
     while "" in text:
         text.remove("")
 
-    size = soup.find("meta", attrs={"name": "size"})
-    if size is None:
-        size = sum(len(word) for word in text)
-
     page_id_text = list(zip([cur_page_id] * len(text), text))
 
-    return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, page_id_text
+    return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, page_id_text
 
 
 def recursively_crawl(num_pages: int, url: str):
@@ -186,7 +188,7 @@ def recursively_crawl(num_pages: int, url: str):
 
         visited.append(cur_url)
 
-        soup, last_modif, stat = asyncio.run(get_soup(cur_url))
+        soup, last_modif, size, stat = asyncio.run(get_soup(cur_url))
 
         parent_link = cur_url
 
@@ -201,7 +203,7 @@ def recursively_crawl(num_pages: int, url: str):
                 insert_data_into_relation(crc32(str.encode(url)), crc32(str.encode(parent_link)))
                 connection.commit()
 
-        cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, size, text = (
+        cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, text = (
             get_info(cur_url, soup, last_modif, par_link))
 
         # If the statCode is 0 (i.e. The website returns nothing), or error code falls into [400, 499] (Error)
