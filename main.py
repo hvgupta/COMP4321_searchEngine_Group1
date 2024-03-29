@@ -189,10 +189,10 @@ def main():
 
     start_time = time.time()
     if not args.is_test:
-        from src.crawler import recursively_crawl
+        from src.crawler import recursively_crawl, recursively_crawl1
         from src.indexer import insertInfoInvIdxTable
         init_database()
-        recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
+        recursively_crawl1(num_pages=MAX_NUM_PAGES, url=URL)
         
     else:
         create_file_from_db()

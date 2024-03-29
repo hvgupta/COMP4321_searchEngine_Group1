@@ -23,17 +23,17 @@ def removeStopWords(words: list[str]) -> list[str]:
 def tokenize(soup: bsoup,textType:str) -> list[str]:
     if soup is None:
         return []
-    return removeStopWords(regex.sub(' ', soup.find(textType).text).split())
+    return removeStopWords(regex.sub("[^A-Za-z]+", " ", soup.get_text()).split())
 
-def insertInfoInvIdxTable(cursor:sqlite3.Cursor ,document:bsoup, pageID:int, tableType:str = "text") -> None:
-    stemmedDocument:list[str] = stemWords(tokenize(document,tableType))
+def insertInfoInvIdxTable(cursor:sqlite3.Cursor, pageID:int, tableType:str,text:str) -> None:
+    stemmedDocument:list[str] = stemWords(text.split())
     
     uniqueWords: np.ndarray[str]
     wordCount: np.ndarray[int]
     uniqueWords, wordCounts = np.unique(stemmedDocument, return_counts=True)
     
     # to check if the page is already in the database
-    fetch = cursor.execute(f"SELECT * FROM {tableType}_inverted_idx WHERE page_id=?",pageID).fetchall()
+    fetch = cursor.execute(f"SELECT * FROM {tableType}_inverted_idx WHERE page_id=?",(pageID,)).fetchall()
     
     if (len(fetch) != 0):
         delete_from_table(cursor, f"{tableType}_inverted_idx", {"page_id":pageID})
@@ -48,16 +48,26 @@ def insertInfoInvIdxTable(cursor:sqlite3.Cursor ,document:bsoup, pageID:int, tab
 
 def insertInfoWordPosTable(cursor:sqlite3.Cursor, pageID:int,text:str, tableType:str = "body") -> None:
     
-    simplifiedText:str = re.sub("[^A-Za-z]+", " ", text)
-    uniqueWords: np.ndarray[str] = np.unique(simplifiedText.split())
+    uniqueWords: np.ndarray[str] = np.unique(text.split())
+    sentenceList: np.ndarray[str] = np.array(text.split())
     
-    sentenceList:list[str] = simplifiedText.split(".")
+    fetch = cursor.execute(f"SELECT * FROM {tableType}_page_id_word WHERE page_id=?",(pageID,)).fetchall()
     
+    if fetch is not None or fetch != []:
+        delete_from_table(cursor, f"{tableType}_page_id_word", {"page_id":pageID})
     
     for word in uniqueWords:
         indexes:np.ndarray = np.expand_dims(np.arange(len(sentenceList))[word == np.array(sentenceList)],axis=1)
-        pageIds:np.ndarray = np.full((indexes.size,1), 1)
+        pageIds:np.ndarray = np.full((indexes.size,1), pageID)
         wordIds:np.ndarray = np.full((indexes.size,1), crc32(str.encode(word)))
         
-        data:list = np.hstack((wordIds,indexes,pageIds)).tolist()
+        data:list = np.hstack((wordIds,pageIds,indexes)).tolist()
         insertIntoTable(cursor, f"{tableType}_page_id_word", data)
+        
+def insertInfoWordTable(cursor:sqlite3.Cursor, text:str) -> None:
+    uniqueWords: np.ndarray[str] = np.unique(text.split())
+
+    for word in uniqueWords:
+        fetch = cursor.execute(f"SELECT * FROM word_id_word WHERE word=?",(word,)).fetchall()
+        if fetch is None or fetch == []:    
+            insertIntoTable(cursor, "word_id_word", [crc32(str.encode(word)), word])

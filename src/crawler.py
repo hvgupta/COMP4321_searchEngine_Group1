@@ -11,7 +11,7 @@ from pathlib import Path
 import src.sqlAPI as sqlAPI
 import signal
 from contextlib import contextmanager
-from src.indexer import insertInfoInvIdxTable
+from src.indexer import insertInfoInvIdxTable, insertInfoWordPosTable, insertInfoWordTable
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -177,6 +177,7 @@ def getInfo(website:bsoup, url:str)->tuple[int, str, int, str]:
     # If one cannot get the title, just assign none to the title
     except AttributeError:
         title = ""
+    title = text = re.sub("[^a-zA-Z]+", " ", title)
     
     text:str
     try:
@@ -191,13 +192,13 @@ def getInfo(website:bsoup, url:str)->tuple[int, str, int, str]:
     return parentID, title, size, text
     
 
-def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
+def recursively_crawl1(num_pages: int, url: str):
     
-    if (len(queue) == 0):
-        return
+    queue:list[str] = [url]  # Queue for BFS
+    visited:list[str] = []  # Visited pages
     count:int = 0
     
-    relationArrayTrack:list[list[str]]
+    relationArrayTrack:list[list[str]] = []
     
     while (count <= num_pages and len(queue) > 0):
         
@@ -211,20 +212,26 @@ def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
         
         child_urls:list[str] = get_sub_link(cur_url, soup)
         
-        parentID, title, size, text = getInfo(soup,cur_url)
+        parentID, title, size, body = getInfo(soup,cur_url)
         
-        fetch = cursor.execute("SELECT * FROM page_info WHERE page_id=?", (parentID,)).fetchone()
+        fetch = cursor.execute("SELECT * FROM page_info WHERE page_id=?", (parentID,)).fetchall()
         
-        if fetch is not None and fetch[2] >= last_modif:
+        if len(fetch) > 0 and fetch[2] >= last_modif:
             continue
-        elif fetch is not None:
+        elif (len(fetch) > 0):
             #delete the original data, and then reinsert the new data
             sqlAPI.delete_from_table(cursor, "relation", {"parent_id":parentID})
 
         sqlAPI.insertIntoTable(cursor, "page_info", [parentID, size, last_modif, title])
         sqlAPI.insertIntoTable(cursor, "id_url", [parentID, cur_url])
-        insertInfoInvIdxTable(cursor, soup, parentID,"body")
-        insertInfoInvIdxTable(cursor, soup, parentID,"title")
+        insertInfoWordTable(cursor, body)
+        insertInfoWordTable(cursor, title)
+        insertInfoInvIdxTable(cursor, parentID,"body",body)
+        insertInfoInvIdxTable(cursor,parentID, "title",title)
+        insertInfoWordPosTable(cursor, parentID, body, "body")
+        insertInfoWordPosTable(cursor, parentID, title, "title")
+        
+        connection.commit()
         
         for url in child_urls:
             
@@ -235,8 +242,6 @@ def recursively_crawl1(num_pages: int, visited:list[str], queue:list[str]):
                 num_pages -= 1
         
     while(len(relationArrayTrack) > 0): sqlAPI.insertIntoTable(cursor, "relation", relationArrayTrack.pop(0))
-    
-
 
 def recursively_crawl(num_pages: int, url: str):
     count = 0
