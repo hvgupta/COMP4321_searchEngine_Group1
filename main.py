@@ -37,8 +37,7 @@ def init_database():
             CREATE TABLE relation (
                 child_id INTEGER,
                 parent_id INTEGER,
-                PRIMARY KEY (child_id, parent_id), 
-                FOREIGN KEY (child_id) REFERENCES page_info(page_id) ON DELETE CASCADE,
+                PRIMARY KEY (child_id, parent_id),
                 FOREIGN KEY (parent_id) REFERENCES page_info(page_id) ON DELETE CASCADE
             )""")
 
@@ -107,10 +106,9 @@ def create_file_from_db():
         except sqlite3.OperationalError:
             print("You did not create the necessary databases yet. Crawling with default setting.")
             from src.crawler import recursively_crawl
-            from src.indexer import indexer
+            
             init_database()
-            recursively_crawl(num_pages=30, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
-            indexer()
+            recursively_crawl(connection,num_pages=30, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
             create_file_from_db()
 
         all_page_id = cursor.fetchall()
@@ -134,7 +132,7 @@ def create_file_from_db():
             # Top 10 words
             list_of_word = cursor.execute("""
                 SELECT word, Count(word) AS Frequency
-                FROM page_id_word
+                FROM body_page_id_word JOIN word_id_word
                 WHERE page_id = ?
                 GROUP BY word
                 ORDER BY
@@ -158,11 +156,14 @@ def create_file_from_db():
 
             for i in range(len(list_of_child_id)):
 
-                child_link = cursor.execute("""
+                child_link = cursor.execute(
+                """
                 SELECT url FROM id_url WHERE page_id = ?
-            """, (list_of_child_id[i],)).fetchone()[0]
+                """
+                , (list_of_child_id[i],)).fetchone()
 
-                file.write(child_link + "\n")
+                if child_link is not None:
+                    file.write(child_link[0] + "\n")
             file.write("-" * 30 + "\n")
 
 
@@ -186,14 +187,13 @@ def main():
     URL = args.URL
 
     start_time = time.time()
-    if not args.is_test:
-        from src.crawler import recursively_crawl, recursively_crawl1
-        from src.indexer import insertInfoInvIdxTable
-        init_database()
-        recursively_crawl1(num_pages=MAX_NUM_PAGES, url=URL)
+    # if not args.is_test:
+    #     from src.crawler import recursively_crawl
+    #     init_database()
+    #     recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
         
-    else:
-        create_file_from_db()
+    # else:
+    create_file_from_db()
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
