@@ -8,8 +8,6 @@ from datetime import datetime
 import re
 import asyncio
 from pathlib import Path
-import signal
-from contextlib import contextmanager
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -20,49 +18,38 @@ connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
 
-class TimeoutException(Exception):
-    pass
-
-
-# Thanks https://stackoverflow.com/a/601168 for providing this function.
-@contextmanager
-def time_limit(seconds):
-    def signal_handler(signum, frame):
-        raise TimeoutException("Timed out!")
-
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(seconds)
-    try:
-        yield
-    finally:
-        signal.alarm(0)
-
-
 async def get_soup(url: str) -> (bsoup, int, int, int):
     # We will skip pdf and mailto
     if url[-3:] == "pdf" or url[0:6] == "mailto":
         return bsoup(""), 0, 0, 0
 
+    # We want to add https:// in front of the webpage if there is none
     if "https://" not in url and "http://" not in url:
         url = "https://" + url
 
     # Try to get the data. If failed, then the program terminates.
+    # Set a timeout period
     try:
-        with time_limit(5):
-            request = requests.get(url)
-        statCode = request.status_code
-        try:
-            last_modif = parsedate_to_datetime((request.headers['last-modified']))
-            last_modif = int(datetime.timestamp(last_modif))
+        request = requests.get(url, timeout=5)
 
-        # If we cannot crawl the date, get the current time
-        except KeyError:
-            last_modif = parsedate_to_datetime((request.headers['Date']))
-            last_modif = int(datetime.timestamp(last_modif))
-
-    except TimeoutException:
+    except requests.exceptions.Timeout:
         print("Crawling the page " + url + " exceed 5 second! Skipping crawling the page!")
         return bsoup(""), 0, 0, 408
+
+    except:
+        print("Error occurred when crawling the page " + url + ". Skipping")
+        return bsoup(""), 0, 0, 500
+
+    statCode = request.status_code
+
+    try:
+        last_modif = parsedate_to_datetime((request.headers['last-modified']))
+        last_modif = int(datetime.timestamp(last_modif))
+
+    # If we cannot crawl the date, get the current time
+    except KeyError:
+        last_modif = parsedate_to_datetime((request.headers['Date']))
+        last_modif = int(datetime.timestamp(last_modif))
 
     # Otherwise
     except:
@@ -74,7 +61,7 @@ async def get_soup(url: str) -> (bsoup, int, int, int):
     if statCode != -1:
         if statCode not in range(200, 399):
             print("Error code " + str(statCode) + " for webpage " + url + "!")
-            return bsoup(""), 0, statCode
+            return bsoup(""), 0, 0, statCode
     else:
         print("Page crawling error for page " + url + "! Skipping")
         return bsoup(""), 0, 0, statCode
@@ -152,7 +139,7 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
     text = soup.get_text().split()  # get list of strings
 
     for i in range(len(text)):
-        text[i] = re.sub("[^a-zA-Z]+", "", text[i]).lower()
+        text[i] = re.sub("[^a-zA-Z-]+", "", text[i]).lower()
 
     while "" in text:
         text.remove("")
@@ -289,7 +276,7 @@ def insert_data_into_title_page_id_word(title, page_id):
     title = title.split()
 
     for i in range(len(title)):
-        title[i] = re.sub("[^a-zA-Z]+", "", title[i])
+        title[i] = re.sub("[^a-zA-Z-]+", "", title[i])
 
     while "" in title:
         title.remove("")

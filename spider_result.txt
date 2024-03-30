@@ -26,7 +26,7 @@ https://www.cse.ust.hk/~kwtleung/COMP4321/news/cnn.htm
 books
 https://www.cse.ust.hk/~kwtleung/COMP4321/books.htm
 2023-05-16 13:03:16, 601
-books 2; retrieval 1; relevance 1; read 1; pseudomathematics 1; note 1; main 1; machinereadable 1; keyword 1; information 1; 
+books 2; retrieval 1; relevance 1; read 1; pseudo-mathematics 1; note 1; main 1; machine-readable 1; keyword 1; information 1; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm
 https://www.cse.ust.hk/~kwtleung/COMP4321/books/book1.htm
 https://www.cse.ust.hk/~kwtleung/COMP4321/books/book2.htm
@@ -80,7 +80,7 @@ https://www.cse.ust.hk/~kwtleung/COMP4321/books.htm
 book2
 https://www.cse.ust.hk/~kwtleung/COMP4321/books/book2.htm
 2023-05-16 13:03:16, 2084
-data 11; bases 7; information 5; generation 4; retrieval 3; machinereadable 3; bibliographic 3; volume 2; storage 2; registry 2; 
+data 11; bases 7; information 5; generation 4; retrieval 3; machine-readable 3; bibliographic 3; volume 2; storage 2; registry 2; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/books.htm
 ------------------------------
 book3
@@ -92,19 +92,19 @@ https://www.cse.ust.hk/~kwtleung/COMP4321/books.htm
 Dinosaur Planet (2003)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/1.html
 2023-05-16 13:03:16, 3605
-dinosaur 20; search 11; planet 11; titles 7; title 7; matches 7; dinosaurs 7; tv 6; movies 5; imdb 5; 
+dinosaur 20; search 11; planet 11; titles 7; title 7; matches 7; dinosaurs 7; - 7; tv 6; movies 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Isle of Man TT 2004 Review (2004)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/2.html
 2023-05-16 13:03:26, 2868
-search 11; review 11; tt 7; isle 7; titles 5; title 5; matches 5; imdb 5; tv 4; movies 4; 
+search 11; review 11; tt 7; isle 7; titles 5; title 5; matches 5; imdb 5; - 5; tv 4; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Character (1997)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/3.html
 2023-05-16 13:03:36, 4008
-character 40; search 11; title 7; titles 6; matches 6; aka 6; tv 5; studies 5; imdb 5; revealed 4; 
+character 40; search 11; title 7; titles 6; matches 6; aka 6; - 6; tv 5; studies 5; imdb 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Paula Abdul's Get Up and Dance (1994)
@@ -116,37 +116,37 @@ https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 The Rise and Fall of ECW (2004)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/5.html
 2023-05-16 13:03:38, 3928
-rise 28; fall 28; search 11; tv 8; ecw 8; titles 6; title 6; matches 6; imdb 5; movies 4; 
+rise 28; fall 28; search 11; tv 8; ecw 8; titles 6; title 6; matches 6; imdb 5; - 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Sick (1997)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/6.html
 2023-05-16 13:03:40, 5243
-sick 70; aka 14; title 11; search 11; tv 8; love 7; usa 6; twisted 6; titles 5; spike 5; 
+sick 70; aka 14; - 13; title 11; search 11; tv 8; love 7; usa 6; twisted 6; titles 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 8 Man (1992)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/7.html
 2023-05-16 13:03:40, 3498
-search 11; titles 7; matches 7; aka 7; usa 5; tv 5; title 5; imdb 5; wrestlemania 4; vg 4; 
+search 11; - 10; titles 7; matches 7; aka 7; usa 5; tv 5; title 5; imdb 5; wrestlemania 4; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 What the #$*! Do We Know!? (2004)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/8.html
 2023-05-16 13:03:42, 4147
-title 11; search 11; aka 8; usa 5; tv 5; titles 5; matches 5; imdb 5; summer 4; movies 4; 
+title 11; search 11; - 9; aka 8; usa 5; tv 5; titles 5; matches 5; imdb 5; summer 4; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Class of Nuke 'Em High 2 (1991)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/9.html
 2023-05-16 13:03:44, 7075
-imdb 11; user 9; nuke 9; em 9; class 9; subhumanoid 7; rating 7; movie 6; meltdown 6; usa 5; 
+imdb 11; nuke 9; em 9; class 9; user 7; subhumanoid 7; rating 7; meltdown 6; usa 5; title 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Fighter (2001)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/10.html
 2023-05-16 13:03:16, 13199
-fighter 220; aka 91; street 56; title 52; vg 40; english 34; usa 21; ii 21; search 12; tv 11; 
+fighter 220; aka 91; - 63; street 56; title 52; vg 40; english 34; usa 21; ii 21; search 12; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Full Frame: Documentary Shorts (1999)
@@ -158,7 +158,7 @@ https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 My Favorite Brunette (1947)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/12.html
 2023-05-16 13:03:18, 6432
-imdb 11; user 9; movie 9; rating 8; favorite 7; brunette 7; quotes 5; plot 5; hope 5; dvdvhscdall 5; 
+imdb 11; rating 8; movie 8; user 7; favorite 7; brunette 7; quotes 5; hope 5; dvdvhscdall 5; details 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Lord of the Rings: The Return of the King: Extended Edition: Bonus Material (2003)
@@ -170,30 +170,30 @@ https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 Nature: Antarctica (1982)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/14.html
 2023-05-16 13:03:20, 3711
-antarctica 21; search 11; title 8; nature 8; aka 8; tv 7; antarctic 7; titles 6; matches 6; imdb 5; 
+antarctica 21; search 11; - 10; title 8; nature 8; aka 8; tv 7; antarctic 7; titles 6; matches 6; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Neil Diamond: Greatest Hits Live (1988)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/15.html
 2023-05-16 13:03:20, 5415
-imdb 11; user 9; neil 7; diamond 7; rating 6; live 6; hits 6; details 6; concert 6; women 5; 
+imdb 11; user 7; neil 7; diamond 7; rating 6; live 6; hits 6; details 6; concert 6; women 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Screamers (1996)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/16.html
 2023-05-16 13:03:22, 3737
-screamers 12; aka 12; search 11; title 9; titles 7; matches 7; screamer 6; vg 5; usa 5; imdb 5; 
+- 15; screamers 12; aka 12; search 11; title 9; titles 7; matches 7; screamer 6; vg 5; usa 5; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 7 Seconds (2005)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/17.html
 2023-05-16 13:03:22, 3521
-search 11; titles 7; results 6; matches 6; aka 6; title 5; imdb 5; usa 4; tv 4; movies 4; 
+search 11; - 9; titles 7; results 6; matches 6; aka 6; title 5; imdb 5; usa 4; tv 4; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------
 Immortal Beloved (1994)
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie/18.html
 2023-05-16 13:03:24, 7583
-imdb 11; user 9; movie 8; immortal 8; beloved 8; van 7; ludwig 7; beethoven 7; rating 6; music 6; 
+imdb 11; immortal 8; beloved 8; van 7; user 7; movie 7; ludwig 7; beethoven 7; rating 6; music 6; 
 https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm
 ------------------------------

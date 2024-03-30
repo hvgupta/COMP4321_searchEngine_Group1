@@ -67,10 +67,12 @@ def indexer():
         count_body = list(Counter(body_text).items())
         count_title = list(Counter(title_text).items())
 
+        # Insert the occurrence into the database
         for element in count_body:
             cursor.execute("INSERT INTO inverted_idx VALUES (?,?,?)", (cur_page_id, element[0], element[1],))
 
         for element in count_title:
             cursor.execute("INSERT INTO title_inverted_idx VALUES (?,?,?)", (cur_page_id, element[0], element[1],))
 
+        # Save the changes to database
         connection.commit()
