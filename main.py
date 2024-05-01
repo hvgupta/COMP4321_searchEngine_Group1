@@ -1,4 +1,5 @@
-import argparse
+# import argparse
+import os
 from datetime import datetime
 import sqlite3
 from itertools import chain
@@ -167,34 +168,17 @@ def create_file_from_db():
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    MAX_NUM_PAGES = 300
+    URL = "https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"
 
-    parser.add_argument("-n", "--num", dest="NUM_PAGES", default="30",
-                        help="Number of pages that will be crawled / indexed")
-    parser.add_argument("-u", "--url", dest="URL", default="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm",
-                        help="The URL that the program will be crawled")
-    parser.add_argument("-t", "--test", dest="is_test", action='store_true', required=False,
-                        help="Read the database and generate output")
+    create_file_from_db()
+    from src.crawler import recursively_crawl
+    from src.indexer import indexer
+    init_database()
+    recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
+    indexer()
 
-    args = parser.parse_args()
-
-    # Simply replace them with your own URL if you find passing flags into program is complicated.
-    # - Number of pages that will be crawled / indexed - 
-    MAX_NUM_PAGES = int(args.NUM_PAGES)
-
-    # - The URL that the program will be crawled -
-    URL = args.URL
-
-    start_time = time.time()
-    if not args.is_test:
-        from src.crawler import recursively_crawl
-        from src.indexer import indexer
-        init_database()
-        recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
-        indexer()
-    else:
-        create_file_from_db()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    os.system("flask run")
 
 
 if __name__ == '__main__':

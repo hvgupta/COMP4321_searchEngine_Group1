@@ -44,29 +44,16 @@ To run the test program, users should do the following.
     pip install -r requirements.txt
     ```
 
-5. Run the test program to crawl pages into database using the following command. (This is for phase 1 only.)
-
-    The test program consists of two inputs, which are the url of the website to be crawled, and
-    the number of pages to be crawled. The usage is shown as follows.
-    
-    ```bash
-    python main.py -u <url> -n <number_of_pages>
-    ```
-    
-    For example, if users would like to crawl 30 pages from the website https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm,
-    one can run the following command.
-    
-    ```bash
-    python main.py -u https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm -n 30
-    ```
-    If users run the program directly without passing any arguments, the program will crawl 30 pages from the website https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm.
-
-    The data is then stored into the database. For database schema, please refer to `schema.pdf`.
-
-6. Run the test program to generate spider_result.txt file from database.
+5. Run the program. The program shall do everything, including initializing database.
 
     ```bash
-    python main.py -t
+    python main.py
     ```
    
-   If database is not detected, the program will first crawl the page with default setting, before generating spider_result.txt file from database.
+6. Now you may see a line mentioning something like
+   
+   ```
+   * Running on http://127.0.0.1:5000
+   ```
+   
+   Simply go to the webpage mentioned, and you can see the search engine there. 
