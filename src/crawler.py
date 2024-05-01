@@ -9,6 +9,7 @@ import re
 import asyncio
 from pathlib import Path
 
+
 regex = re.compile('[^a-zA-Z]')
 
 db_path = str(Path.cwd()) + '/src/files/database.db'
