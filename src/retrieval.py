@@ -25,7 +25,7 @@ stopword = str(Path.cwd()) + '/files/stopwords.txt'
 
 # Load database, then create a cursor.
 path_of_db = str(Path.cwd()) + '/files/database.db'
-connection = sqlite3.connect('path_of_db')
+connection = sqlite3.connect(path_of_db)
 cursor = connection.cursor()
 
 # Stemmer
@@ -66,26 +66,28 @@ def parse_string(query: str):
     # Create an array for returning later
     result = []
 
+    print(phrases_no_stopword, single_word_no_stopword)
+
     # Put the converted single word phrase into result
     for element in single_word_no_stopword:
         word_id = cursor.execute("""
             SELECT word_id FROM word_id_word WHERE word = ? 
-        """, element).fetchone()
+        """, (element,)).fetchone()[0]
 
-        result.append([word_id if word_id is not None else -1])
+        result.append([word_id])
 
     # Put the converted phrase into a list, then into result
     # Iterate over the phrases
     for element in phrases_no_stopword:
         list_of_word_id = []
+        words = element.split()
         # Iterate over the word in the phrase
-        for word in element:
+        for word in words:
             word_id = cursor.execute("""
                         SELECT word_id FROM word_id_word WHERE word = ? 
-                    """, word).fetchone()
-            list_of_word_id.append(word_id if word_id is not None else -1)
+                    """, (word,)).fetchone()[0]
+            list_of_word_id.append(word_id)
 
         result.append(list_of_word_id)
 
     return result
-
