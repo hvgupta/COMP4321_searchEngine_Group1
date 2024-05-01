@@ -99,11 +99,10 @@ def create_file_from_db():
                 SELECT page_id FROM page_info  
             """)
         except sqlite3.OperationalError:
-            print("You did not create the necessary databases yet. Crawling with default setting.")
             from src.crawler import recursively_crawl
             from src.indexer import indexer
             init_database()
-            recursively_crawl(num_pages=30, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
+            recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
             indexer()
             create_file_from_db()
 
@@ -168,15 +167,11 @@ def create_file_from_db():
 
 
 def main():
-    MAX_NUM_PAGES = 300
-    URL = "https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"
-
+    start_time = time.time()
     create_file_from_db()
-    from src.crawler import recursively_crawl
     from src.indexer import indexer
-    init_database()
-    recursively_crawl(num_pages=MAX_NUM_PAGES, url=URL)
     indexer()
+    print("--- %s seconds for creating database ---" % (time.time() - start_time))
 
     os.system("flask run")
 
