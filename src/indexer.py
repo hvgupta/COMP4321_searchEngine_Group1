@@ -69,10 +69,10 @@ def indexer():
 
         # Insert the occurrence into the database
         for element in count_body:
-            cursor.execute("INSERT INTO inverted_idx VALUES (?,?,?)", (cur_page_id, element[0], element[1],))
+            cursor.execute("INSERT INTO inverted_idx VALUES (?,?,?)", (cur_page_id, int(crc32(str.encode(element[0]))), element[1],))
 
         for element in count_title:
-            cursor.execute("INSERT INTO title_inverted_idx VALUES (?,?,?)", (cur_page_id, element[0], element[1],))
+            cursor.execute("INSERT INTO title_inverted_idx VALUES (?,?,?)", (cur_page_id, int(crc32(str.encode(element[0]))), element[1],))
 
         # Save the changes to database
         connection.commit()

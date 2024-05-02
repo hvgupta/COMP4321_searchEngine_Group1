@@ -66,8 +66,6 @@ def parse_string(query: str):
     # Create an array for returning later
     result = []
 
-    print(phrases_no_stopword, single_word_no_stopword)
-
     # Put the converted single word phrase into result
     for element in single_word_no_stopword:
         word_id = cursor.execute("""
@@ -91,3 +89,9 @@ def parse_string(query: str):
         result.append(list_of_word_id)
 
     return result
+
+
+def search_engine(query: list):
+    """
+    Input:
+    """
