@@ -14,14 +14,10 @@
     <h1 style="text-align:center;"><b> COMP4321 Search Engine</b></h1>
     <p style="text-align: center">Project by Group 1</p>
     <div class="mainPage">
-        <p style="text-align:center;">
+        <form action="{{ url_for('submit_search') }}" method="post" style="text-align:center;">
             <label for="searchbar"><input type="text" id="searchbar" name="searchbar" class="intro"></label>
-                    <br>
-            <br>
-            <br>
-            <button class="menu_button">Search</button>
-            <button class="menu_button">I'm feeling good!</button>
-        </p>
+            <input type="submit" value="Submit" class="menu_button"></input>
+        </form>
     </div>
 </div>
 
