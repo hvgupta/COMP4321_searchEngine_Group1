@@ -58,10 +58,17 @@ def indexer():
         page_id_word_stem = list(zip([cur_page_id] * len(body_text), body_text))
         title_id_word_stem = list(zip([cur_page_id] * len(title_text), title_text))
 
+        # Add index to page_id word
+        for i in range(len(page_id_word_stem)):
+            page_id_word_stem[i] = (i,) + page_id_word_stem[i]
+
+        for i in range(len(title_id_word_stem)):
+            title_id_word_stem[i] = (i,) + title_id_word_stem[i]
+
         # Put them into database
         cursor.executemany("INSERT INTO word_id_word VALUES (?, ?)", word_id_word)
-        cursor.executemany("INSERT INTO title_page_id_word_stem VALUES (?, ?)", title_id_word_stem)
-        cursor.executemany("INSERT INTO page_id_word_stem VALUES (?, ?)", page_id_word_stem)
+        cursor.executemany("INSERT INTO title_page_id_word_stem VALUES (?, ?, ?)", title_id_word_stem)
+        cursor.executemany("INSERT INTO page_id_word_stem VALUES (?, ?, ?)", page_id_word_stem)
 
         # Count the occurrence of the texts
         count_body = list(Counter(body_text).items())
