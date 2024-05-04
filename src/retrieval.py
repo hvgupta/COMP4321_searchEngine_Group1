@@ -7,7 +7,7 @@ from datetime import datetime
 import re
 import asyncio
 from pathlib import Path
-import math
+from math import log2
 from nltk.stem import PorterStemmer as Stemmer
 import sqlite3
 from itertools import chain
@@ -90,6 +90,37 @@ def parse_string(query: str):
 
     return result
 
+def convertToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
+    table:str = "inverted_idx"
+    vector:dict[int,int] = {}
+    if fromTitle:
+        table = "title_inverted_idx"
+        
+    wordList:list[list[int]] = cursor.execute(
+        f"""
+            SELECT word_id, count FROM {table} WHERE page_id = ?
+        """, (page_id,)).fetchall() 
+        
+    maxTF:int = cursor.execute(
+        f"""
+            SELECT MAX(count) FROM {table} WHERE page_id = ?                   
+        """, (page_id,)).fetchone()[0]
+    
+    documentCount:int = cursor.execute(
+        f"""
+            SELECT COUNT(DISTINCT page_id) FROM {table}
+        """).fetchone()[0]
+    
+    for word,tf in wordList:
+        countOfDocument:int = cursor.execute(
+            f"""
+                SELECT COUNT(DISTINCT page_id) FROM {table} WHERE word_id = ?
+            """,(word,)).fetchone()[0]
+        
+        vector[word] = tf * log2(documentCount/countOfDocument) / maxTF
+    
+    return vector   
+            
 
 def search_engine(query: list):
     """
