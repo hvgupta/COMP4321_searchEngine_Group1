@@ -93,22 +93,27 @@ def page_id_to_stems(id: int, num_stems: int = 5, include_title: bool = True) ->
     """
 
     # Get list of all stems in the document
-    stems: list[tuple[str]] = list(cursor.execute("SELECT word FROM page_id_word_stem WHERE page_id = ?", (id,)))
+    stems_freqs: list[tuple[int, int]] = list(cursor.execute("SELECT word_id, count FROM inverted_idx WHERE page_id = ?", (id,)))
     if include_title:
-        stems += list(cursor.execute("SELECT word FROM title_page_id_word_stem WHERE page_id = ?", (id,)))
+        stems_freqs += list(cursor.execute("SELECT word_id, count FROM title_inverted_idx WHERE page_id = ?", (id,)))
     
     # Raise error if no page found
-    if stems is None:
+    if stems_freqs is None:
         raise ValueError("No page with the given ID is found.")
     
-    # List of stems is a list of tuples, flatten it
-    stems_flat: list[str] = [stem[0] for stem in stems]
+    # Convert stem word IDs to stems
+    stems_ids: list[int] = [stem[0] for stem in stems_freqs]
+    freqs: list[int] = [stem[1] for stem in stems_freqs]
+    stems: list[str] = []
+    for stem_id in stems_ids:
+        stem: str = cursor.execute("SELECT word FROM word_id_word WHERE word_id = ?", (stem_id,)).fetchone()[0]
+        stems.append(stem)
 
-    # Count frequency of each stem
-    stems_counts: Dict[str, int] = dict(Counter(stems_flat))
+    # Combine stems and counts
+    stems_counts: list[tuple[str, int]] = list(zip(stems, freqs))
 
     # Sort and filter to get `num_stems` most frequent stems
-    return sorted(stems_counts.items(), key=lambda x: x[1], reverse=True)[0: num_stems]
+    return sorted(stems_counts, key=lambda x: x[1], reverse=True)[0: num_stems]
 
 def page_id_to_links(id: int, parent: bool = True) -> list[str]:
     """
