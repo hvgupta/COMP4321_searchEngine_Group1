@@ -124,3 +124,9 @@ summary::after {
 details[open] summary:after {
     content: ' ▼'
 }
+
+/* Set position of result page footer */
+.result-page-footer {
+    width: 100%;
+    text-align: center;
+}
