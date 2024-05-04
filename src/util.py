@@ -135,9 +135,9 @@ def page_id_to_links(id: int, parent: bool = True) -> list[str]:
     # Get linked page IDs
     link_ids: list[tuple[int]] = []
     if parent:
-        link_ids = cursor.execute("SELECT parent_id FROM relation WHERE child_id = ?", (id,))
+        link_ids = cursor.execute("SELECT parent_id FROM relation WHERE child_id = ?", (id,)).fetchall()
     else:
-        link_ids = cursor.execute("SELECT child_id FROM relation WHERE parent_id = ?", (id,))
+        link_ids = cursor.execute("SELECT child_id FROM relation WHERE parent_id = ?", (id,)).fetchall()
     
     # Convert ID of each linked page to its URL
     links: list[str] = []

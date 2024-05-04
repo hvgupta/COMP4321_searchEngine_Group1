@@ -6,6 +6,7 @@
     --base-fg: #5c6a72;  /* everforest light medium fg */
     --dark-fg: #d3c6aa;  /* everforest dark medium fg */
     --url: #8da101;  /* everforest light medium green */
+    --yellow: #dfa000;  /* everforest light medium yellow */
 }
 
 /* Enable smooth scrolling */
@@ -17,6 +18,13 @@ body {
     background: var(--base-bg);
     margin: 0;
     padding: 0;
+    /* Set font family for body text */
+    font-family: Inter, "Noto Color Emoji", sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+    color: var(--base-fg)
+}
+@supports (font-variation-settings: normal) {
+   body { font-family: InterVariable, "Noto Color Emoji", sans-serif; }
 }
 
 /* Set font family for headings */
@@ -26,14 +34,14 @@ h1, h2, h3 {
     font-style: normal;
     color: var(--base-fg)
 }
-/* Set font family for body text */
-p, a, ul, dl, select, input {
-    font-family: Inter, "Noto Color Emoji", sans-serif;
-    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+/* Set font family for buttons */
+button {
+    font-family: Inter, "Noto Emoji", sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
     color: var(--base-fg)
 }
 @supports (font-variation-settings: normal) {
-    p, a, ul, dl, select, input { font-family: InterVariable, "Noto Color Emoji", sans-serif; }
+    button { font-family: InterVariable, "Noto Emoji", sans-serif; }
 }
 
 section {

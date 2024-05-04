@@ -30,7 +30,7 @@ def submit_search():
     # k: page ID
     # v: page score
     search_results: list[SearchResult] = []
-    for k, v in search_results_raw.items():
+    for k, v in sorted(search_results_raw.items(), key=lambda x: x[1], reverse=True):  # Sort the search results by score
         search_results.append(SearchResult(k, v))
 
     return render_template(

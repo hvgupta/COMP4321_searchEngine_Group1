@@ -54,14 +54,9 @@
     height: 100%;
     border-radius: 2em;
     padding: 0 1em;
-    font-family: Inter, "Noto Emoji", sans-serif;
-    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
     font-size: 1em;
     text-decoration: none;
     transition: 200ms;
-}
-@supports (font-variation-settings: normal) {
-    .search-button { font-family: InterVariable, "Noto Emoji", sans-serif; }
 }
 .search-button:hover {
     filter: brightness(1.1);
