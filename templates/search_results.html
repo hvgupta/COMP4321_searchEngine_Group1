@@ -9,5 +9,39 @@
 </head>
 
 <body>
-    <h1>Hello World!</h1>
+    <h1>Search results</h1>
+    <h2>You searched for: {{ QUERY }}</h2>
+    {% for result in RESULTS %}
+        <div class="search-result">
+            <!-- Title and URL hyperlinks -->
+            <h3 class="result-title"><a href="{{ result.url }}">{{ result.title }}</a></h3>
+            <a href="{{ result.url }}" class="result-url">{{ result.url }}</a>
+
+            <!-- Last modification date, size of page -->
+            <p class="result-date-size">Last modified: {{ result.time_formatted }} | Page size: {{ result.size }}</p>
+
+            <!-- Most frequent stemmed keywords and frequencies -->
+            <p class="result-keywords">
+                {% for keyword, freq in result.keywords %}
+                    {{ keyword }}: {{ freq }}
+                {% endfor %}
+            </p>
+
+            <!-- Parent links -->
+            <p class="result-parents-head">Parent links:</p>
+            <p class="result-parents">
+                {% for parent in result.parent_links %}
+                    <a href="{{ parent }}">{{ parent }}</a>
+                {% endfor %}
+            </p>
+
+            <!-- Child links -->
+            <p class="result-children-head">Child links:</p>
+            <p class="result-children">
+                {% for child in result.child_links %}
+                    <a href="{{ child }}">{{ child }}</a>
+                {% endfor %}
+            </p>
+        </div>
+    {% endfor %}
 </body>
