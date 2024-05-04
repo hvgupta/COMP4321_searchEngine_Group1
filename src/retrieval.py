@@ -21,10 +21,10 @@ from collections import Counter
 # Add oil OwO QwQ
 
 # Create a list of stopwords
-stopword = str(Path.cwd()) + '/files/stopwords.txt'
+stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 
 # Load database, then create a cursor.
-path_of_db = str(Path.cwd()) + '/files/database.db'
+path_of_db = str(Path.cwd()) + '/src/files/database.db'
 connection = sqlite3.connect(path_of_db)
 cursor = connection.cursor()
 
