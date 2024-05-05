@@ -282,8 +282,8 @@ def search_engine(query: str)->dict[int,float]:
 
     return combined_cosineScores
 
-start = time()
-results = search_engine('"why am I tired"')
-end = time()
-print("Time taken: ", end - start)
-print(results)
+# start = time()
+# results = search_engine('"why am I tired"')
+# end = time()
+# print("Time taken: ", end - start)
+# print(results)
