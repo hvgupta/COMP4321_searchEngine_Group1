@@ -7,6 +7,7 @@ import sqlite3
 from itertools import chain
 from collections import Counter
 from time import time
+import numpy as np
 
 
 # To Harsh:
@@ -88,7 +89,7 @@ def parse_string(query: str)->list[list[int]]:
     
     return result
 
-def documentToVec(page_id:int,queryWords:list[int],fromTitle:bool=False)->dict[int,int]:
+def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
     table:str = "inverted_idx"
     vector:dict[int,int] = {}
     
@@ -104,19 +105,23 @@ def documentToVec(page_id:int,queryWords:list[int],fromTitle:bool=False)->dict[i
         f"""
             SELECT MAX(count) FROM {table} WHERE page_id = ?                   
         """, (page_id,)).fetchone()[0]
-
     
-    for word,tf in wordList:
+    forwardIdx:str = "forward_idx"
+    if fromTitle:
+        forwardIdx = "title_forward_idx"
         
-        if word not in queryWords: # if the word is not in the query 
-            continue
+    
+    word_ids = [word for word, _ in wordList]
+    word_counts = cursor.execute(
+        f"""
+            SELECT word_id, count FROM {forwardIdx} WHERE word_id IN ({','.join('?' for _ in word_ids)})
+        """, word_ids).fetchall()
+    
+    countOfDocument = {word_id: count for word_id, count in word_counts}
+    
+    for word, tf in wordList:
         
-        countOfDocument:int = cursor.execute(
-            f"""
-                SELECT COUNT(DISTINCT page_id) FROM {table} WHERE word_id = ?
-            """,(word,)).fetchone()[0]
-        
-        vector[word] = tf * log2(float(DOCUMENT_COUNT)/countOfDocument) / maxTF
+        vector[word] = tf * log2(float(DOCUMENT_COUNT) / countOfDocument[word]) / maxTF
     
     return vector   
 
@@ -206,8 +211,8 @@ def search_engine(query: str):
         if (not phraseFilter(document,splitted_query[1])):
             continue
         
-        title_documentVector:dict[int,int] = documentToVec(document,splitted_query[0],True)
-        text_documentVector:dict[int,int] = documentToVec(document,splitted_query[0])
+        title_documentVector:dict[int,int] = documentToVec(document,True)
+        text_documentVector:dict[int,int] = documentToVec(document)
         
         title_similarity:float = cosineSimilarity(queryVector_title,title_documentVector)
         text_similarity:float = cosineSimilarity(queryVector_text,text_documentVector)
