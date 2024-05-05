@@ -83,3 +83,51 @@ def indexer():
 
         # Save the changes to database
         connection.commit()
+
+    # Forward Index
+    lst = cursor.execute("""
+        SELECT word FROM page_id_word_stem
+    """).fetchall()
+
+    words = list(Counter(list(chain.from_iterable(lst))).keys())
+
+    word_list = []
+
+    for word in words:
+        new_lst = cursor.execute("""
+            SELECT page_id FROM page_id_word_stem WHERE word=?
+        """, (word,)).fetchall()
+
+        count = (len(list(Counter(list(chain.from_iterable(new_lst))).keys())))
+
+        word_id = int(crc32(str.encode(word)))
+        word_list.append((word_id, count))
+
+    cursor.executemany("""
+        INSERT INTO forward_idx VALUES (?,?)
+    """, word_list)
+
+    lst = cursor.execute("""
+        SELECT word FROM title_page_id_word_stem
+    """).fetchall()
+
+    words = list(Counter(list(chain.from_iterable(lst))).keys())
+
+    word_list = []
+
+    for word in words:
+        new_lst = cursor.execute("""
+            SELECT page_id FROM title_page_id_word_stem WHERE word=?
+        """, (word,)).fetchall()
+
+        count = (len(list(Counter(list(chain.from_iterable(new_lst))).keys())))
+
+        word_id = int(crc32(str.encode(word)))
+
+        word_list.append((word_id, count))
+
+    cursor.executemany("""
+        INSERT INTO title_forward_idx VALUES (?,?)
+    """, word_list)
+
+    connection.commit()
