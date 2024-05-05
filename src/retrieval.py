@@ -263,23 +263,31 @@ def search_engine(query: str)->dict[int,float]:
     title_cosineScores = dict(sorted(title_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
     text_cosineScores = dict(sorted(text_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
     
-    combined_cosineScores:dict[int,float] = {}
+    combined_Scores:dict[int,float] = {}
     for (title_key,title_val),(text_key,text_val) in zip(title_cosineScores.items(),text_cosineScores.items()):
-        if title_key in combined_cosineScores:
-            combined_cosineScores[title_key] += ALPHA * title_val
+        if title_key in combined_Scores:
+            combined_Scores[title_key] += ALPHA * title_val
         else:
-            combined_cosineScores[title_key] = ALPHA * title_val
+            combined_Scores[title_key] = ALPHA * title_val
         
-        if text_key in combined_cosineScores:
-            combined_cosineScores[text_key] += BETA * text_val
+        if text_key in combined_Scores:
+            combined_Scores[text_key] += BETA * text_val
         else:
-            combined_cosineScores[text_key] = BETA * text_val
-    combined_cosineScores = dict(sorted(combined_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
+            combined_Scores[text_key] = BETA * text_val
+    
+    pageRankScore:list[tuple[int,float]] = cursor.execute(
+        f"""
+            SELECT page_id, score FROM page_rank
+            WHERE page_id IN ({",".join('?' for _ in combined_Scores)})
+        """, tuple(combined_Scores.keys())).fetchall()
+    combined_Scores = {page_id: score*pageRank for (page_id,score),(_,pageRank) in zip(combined_Scores.items(),pageRankScore)}
+    
+    combined_Scores = dict(sorted(combined_Scores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
 
-    return combined_cosineScores
+    return combined_Scores
 
 # start = time()
-# results = search_engine('hong kong university of science and technology')
+# results = search_engine('"UG" PG')
 # end = time()
 # print("Time taken: ", end - start)
 # print(results)
