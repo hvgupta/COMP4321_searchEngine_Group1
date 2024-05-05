@@ -17,7 +17,7 @@ from time import time
 
 ALPHA:int = 0.6 # how important is titles matching
 BETA:int = 1 - ALPHA # how important is text matching 
-MAX_RESULTS:int = 50
+MAX_RESULTS:int = 50 # max results that can be returned
 
 # Create a list of stopwords
 stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
@@ -26,6 +26,10 @@ stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 path_of_db = str(Path.cwd()) + '/src/files/database.db'
 connection = sqlite3.connect(path_of_db)
 cursor = connection.cursor()
+
+DOCUMENT_COUNT:int = cursor.execute("""
+    SELECT COUNT(page_id) from id_url
+                                """).fetchone()[0]
 
 # Stemmer
 ps = Stemmer()
@@ -84,7 +88,7 @@ def parse_string(query: str)->list[list[int]]:
     
     return result
 
-def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
+def documentToVec(page_id:int,queryWords:list[int],fromTitle:bool=False)->dict[int,int]:
     table:str = "inverted_idx"
     vector:dict[int,int] = {}
     
@@ -100,19 +104,19 @@ def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
         f"""
             SELECT MAX(count) FROM {table} WHERE page_id = ?                   
         """, (page_id,)).fetchone()[0]
-    
-    documentCount:int = cursor.execute(
-        f"""
-            SELECT COUNT(DISTINCT page_id) FROM {table}
-        """).fetchone()[0]
+
     
     for word,tf in wordList:
+        
+        if word not in queryWords: # if the word is not in the query 
+            continue
+        
         countOfDocument:int = cursor.execute(
             f"""
                 SELECT COUNT(DISTINCT page_id) FROM {table} WHERE word_id = ?
             """,(word,)).fetchone()[0]
         
-        vector[word] = tf * log2(float(documentCount)/countOfDocument) / maxTF
+        vector[word] = tf * log2(float(DOCUMENT_COUNT)/countOfDocument) / maxTF
     
     return vector   
 
@@ -122,11 +126,6 @@ def queryToVec(queryEncoding:list[int],table:str)->dict[int,int]:
     
     wordsTF:dict[int,int] = Counter(queryEncoding)
     maxTF: int = max(wordsTF.values())
-
-    documentCount:int = cursor.execute(
-        f"""
-            SELECT COUNT(DISTINCT page_id) FROM {table}
-        """).fetchone()[0] + 1
     
     for word,tf in list(wordsTF.items()):
         countOfDocument:int = cursor.execute(
@@ -134,7 +133,7 @@ def queryToVec(queryEncoding:list[int],table:str)->dict[int,int]:
                 SELECT COUNT(DISTINCT page_id) FROM {table} WHERE word_id = ?
             """,(word,)).fetchone()[0] + 1
         
-        vector[word] = tf * log2(float(documentCount)/countOfDocument) / float(maxTF)
+        vector[word] = tf * log2(float(DOCUMENT_COUNT)/countOfDocument) / float(maxTF)
     
     return vector
 
@@ -145,6 +144,9 @@ def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->fl
         output: it is a relative output of cosine distance.
                 Magnitude of the query vector is not calculated since it is constant 
     """
+    
+    if (len(queryVector) == 0 or len(documentVector) == 0):
+        return 0.0
     
     reduced_queryVector = {key: value for key, value in queryVector.items() if key in documentVector}
     reduced_documentVector = {key: value for key, value in documentVector.items() if key in queryVector}
@@ -186,7 +188,7 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
     return True
 
 def search_engine(query: str):
-    
+    start = time()
     splitted_query:list[list[int]] = parse_string(query)
     queryVector_title:dict[int,int] = queryToVec(splitted_query[0],"title_inverted_idx")
     queryVector_text:dict[int,int] = queryToVec(splitted_query[0],"inverted_idx")
@@ -204,8 +206,8 @@ def search_engine(query: str):
         if (not phraseFilter(document,splitted_query[1])):
             continue
         
-        title_documentVector:dict[int,int] = documentToVec(document,True)
-        text_documentVector:dict[int,int] = documentToVec(document)
+        title_documentVector:dict[int,int] = documentToVec(document,splitted_query[0],True)
+        text_documentVector:dict[int,int] = documentToVec(document,splitted_query[0])
         
         title_similarity:float = cosineSimilarity(queryVector_title,title_documentVector)
         text_similarity:float = cosineSimilarity(queryVector_text,text_documentVector)
@@ -227,7 +229,11 @@ def search_engine(query: str):
             combined_cosineScores[text_key] += BETA * text_val
         else:
             combined_cosineScores[text_key] = BETA * text_val
+    combined_cosineScores = dict(sorted(combined_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
     
+    end = time()
+    print("Time taken: ", end - start)
     return combined_cosineScores
 
 results = search_engine('"Hong Kong" University of Science and Technology')
+print(results)
