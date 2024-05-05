@@ -93,19 +93,14 @@ def init_database():
         cursor.execute("""
             CREATE TABLE title_forward_idx (
               word_id INTEGER,
-              count INTEGER
+              count INTEGER,
+              UNIQUE (word_id, count) ON CONFLICT REPLACE
         )""")
 
         cursor.execute("""
             CREATE TABLE forward_idx (
               word_id INTEGER,
               count INTEGER
-        )""")
-        
-        cursor.execute("""
-            CREATE TABLE page_rank (
-              page_id INTEGER,
-              rank FLOAT
         )""")
 
         connection.commit()
@@ -116,18 +111,11 @@ def init_database():
 
 
 def create_file_from_db():
-    with open("spider_result.txt", "w+") as file:
-        try:
-            cursor.execute("""
-                SELECT page_id FROM page_info  
-            """)
-        except sqlite3.OperationalError:
-            from src.crawler import recursively_crawl
-            from src.indexer import indexer
-            init_database()
-            recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
-            indexer()
-            pageRank.startPageRank()
+    from src.crawler import recursively_crawl
+    from src.indexer import indexer
+    init_database()
+    recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
+    indexer()
 
 
 def main():

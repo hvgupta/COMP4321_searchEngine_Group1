@@ -10,6 +10,7 @@ def populate_pageRank(scores:list[int],allPages:list[int])->None:
     cursor.execute("DELETE FROM page_rank")
     data:list[tuple[int,float]] = [(allPages[i],scores[i]) for i in range(len(allPages))]
     cursor.executemany("INSERT INTO page_rank(page_id,score) VALUES(?,?)",data)
+    connection.commit()
 
 def generateAdjacencyMatrix(allPages:list[int])->np.ndarray[np.ndarray[float]]:
     matrixMap:dict[dict[int,float]] = {key:{val:0 for val in allPages} for key in allPages}
@@ -43,12 +44,6 @@ def page_rank(curPageRankScore:np.ndarray[int],adjacency_matrix:np.ndarray[np.nd
     return page_rank_scores
 
 def startPageRank()->None:
-    allPages:list[int] = [page[0] for page in cursor.execute("SELECT page_id FROM page_info").fetchall()]
-    adjacencyMatrix:np.ndarray[np.ndarray[float]] = generateAdjacencyMatrix(allPages)
-    pageRankScores:np.ndarray[float] = page_rank(np.ones(len(allPages)),adjacencyMatrix, 0.85)
-    populate_pageRank(pageRankScores,allPages)
-
-def updatePageRank()->None:
     allPages:list[int] = [page[0] for page in cursor.execute("SELECT page_id FROM page_info").fetchall()]
     adjacencyMatrix:np.ndarray[np.ndarray[float]] = generateAdjacencyMatrix(allPages)
     pageRankScores:np.ndarray[float] = page_rank(np.ones(len(allPages)),adjacencyMatrix, 0.85)
