@@ -1,17 +1,12 @@
-from urllib.parse import urljoin, urlparse
-from zlib import crc32
-import requests
 import sqlite3
-from email.utils import parsedate_to_datetime
-from datetime import datetime
 import re
-import asyncio
 from pathlib import Path
 from math import log2
 from nltk.stem import PorterStemmer as Stemmer
 import sqlite3
 from itertools import chain
 from collections import Counter
+from time import time
 
 
 # To Harsh:
@@ -66,7 +61,7 @@ def parse_string(query: str)->list[list[int]]:
         querywords = phrase.split()
 
         resultwords = [ps.stem(word) for word in querywords if word.lower() not in stopwords]
-        result = ' '.join(resultwords)
+        result = " " + ' '.join(resultwords) + " "
 
         phrases_no_stopword.append(result)
 
@@ -85,30 +80,14 @@ def parse_string(query: str)->list[list[int]]:
             pass
     result.append(phrase)
 
-    phraseList = []
-    # Put the converted phrase into a list, then into result
-    # Iterate over the phrases
-    for element in phrases_no_stopword:
-        list_of_word_id = []
-        words = element.split()
-        # Iterate over the word in the phrase
-        for word in words:
-            try: # ignore the word if it is not in the database
-                word_id = cursor.execute("""
-                            SELECT word_id FROM word_id_word WHERE word = ? 
-                        """, (word,)).fetchone()[0]
-                list_of_word_id.append(word_id)
-            except:
-                pass
-
-        phraseList.append(list_of_word_id)
-    result.append(phraseList)
+    result.append(phrases_no_stopword)
     
     return result
 
 def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
     table:str = "inverted_idx"
     vector:dict[int,int] = {}
+    
     if fromTitle:
         table = "title_inverted_idx"
         
@@ -133,7 +112,7 @@ def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
                 SELECT COUNT(DISTINCT page_id) FROM {table} WHERE word_id = ?
             """,(word,)).fetchone()[0]
         
-        vector[word] = tf * log2(float(documentCount)/countOfDocument) / float(maxTF)
+        vector[word] = tf * log2(float(documentCount)/countOfDocument) / maxTF
     
     return vector   
 
@@ -176,7 +155,7 @@ def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->fl
     return dotProduct / documentMagnitude
 
 
-def phraseFilter(document_id:int, phases:list[list[int]]) -> bool:
+def phraseFilter(document_id:int, phases:list[str]) -> bool:
     """
     `Input`: document_id: int: The id of the document
     `Input`: phases: list[list[int]]: The list of phrases to be queried
@@ -185,33 +164,24 @@ def phraseFilter(document_id:int, phases:list[list[int]]) -> bool:
     if (len(phases) == 0 or len(phases[0]) == 0):
         return True
 
+    documentTitle_list:list[set[str]] = cursor.execute(
+        """
+            SELECT word FROM title_page_id_word_stem WHERE page_id = ?
+        """, 
+        (document_id,)).fetchall()
+    documentTitle:str = " ".join(list(chain.from_iterable(documentTitle_list)))
+    
+    documentText_List:list[set[str]] = cursor.execute(
+        """
+            SELECT word FROM page_id_word_stem WHERE page_id = ?
+        """, 
+        (document_id,)).fetchall()
+    documentText:str = " ".join(list(chain.from_iterable(documentText_List)))
+
     for phrase in phases:
         
-        phraseText:list[str] = []
-        for word_id in phrase:
-            word = cursor.execute(
-                """
-                    SELECT word FROM word_id_word WHERE word_id = ?
-                """, (word_id,)).fetchone()[0]
-            phraseText.append(word)
-        
-        Phrase:str = " " + " ".join(phraseText) + " "
-        documentTitle_list:list[set[str]] = cursor.execute(
-            """
-                SELECT word FROM title_page_id_word_stem WHERE page_id = ?
-            """, 
-            (document_id,)).fetchall()
-        documentTitle:str = " ".join(list(chain.from_iterable(documentTitle_list)))
-        
-        documentText_List:list[set[str]] = cursor.execute(
-            """
-                SELECT word FROM page_id_word_stem WHERE page_id = ?
-            """, 
-            (document_id,)).fetchall()
-        documentText:str = " ".join(list(chain.from_iterable(documentText_List)))
-        
-        if documentTitle.find(Phrase) == -1 and documentText.find(Phrase) == -1:
-            return False        
+        if re.match(phrase, documentTitle) == phrase and re.match(phrase, documentText) == phrase:
+            return False    
 
     return True
 
@@ -233,6 +203,7 @@ def search_engine(query: str):
         document = document[0]
         if (not phraseFilter(document,splitted_query[1])):
             continue
+        
         title_documentVector:dict[int,int] = documentToVec(document,True)
         text_documentVector:dict[int,int] = documentToVec(document)
         
@@ -260,4 +231,3 @@ def search_engine(query: str):
     return combined_cosineScores
 
 results = search_engine('"Hong Kong" University of Science and Technology')
-print(results)
