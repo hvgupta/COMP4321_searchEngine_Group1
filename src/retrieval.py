@@ -111,15 +111,15 @@ def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
         forwardIdx = "title_forward_idx"
         
     word_ids:list[int] = []
+    queryArray:list[str] = []
     for word,_ in wordList:
         word_ids.append(word)
-        
+        queryArray.append("?")
         
     
-    word_ids = [word for word, _ in wordList]
     word_counts = cursor.execute(
         f"""
-            SELECT word_id, count FROM {forwardIdx} WHERE word_id IN ({','.join('?' for _ in word_ids)})
+            SELECT word_id, count FROM {forwardIdx} WHERE word_id IN ({','.join(queryArray)})
         """, word_ids).fetchall()
     
     countOfDocument = {word_id: count for word_id, count in word_counts}
@@ -200,6 +200,35 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
 
     return True
 
+def queryFilter(document_id:int, query:list[int]) -> bool:
+    """
+    `Input`: document_id: int: The id of the document
+    `Input`: query: list[int]: The list of words to be queried
+    `Return`: bool: True if the document contains any of the words, False otherwise
+    """
+    if (len(query) == 0):
+        return True
+
+    documentTitle_list:list[int] = cursor.execute(
+        """
+            SELECT word_id FROM title_inverted_idx WHERE page_id = ?
+        """, 
+        (document_id,)).fetchall()
+    documentTitle:list[int] = [x[0] for x in documentTitle_list]
+    
+    documentText_List:list[int] = cursor.execute(
+        """
+            SELECT word_id FROM inverted_idx WHERE page_id = ?
+        """, 
+        (document_id,)).fetchall()
+    documentText:list[int] = [x[0] for x in documentText_List]
+
+    for word in query:
+        if word in documentTitle or word in documentText:
+            return True
+
+    return False
+
 def search_engine(query: str)->dict[int,float]:
 
     splitted_query:list[list[int]] = parse_string(query)
@@ -219,8 +248,12 @@ def search_engine(query: str)->dict[int,float]:
     text_cosineScores:dict[int,float] = {}
     for document in allDocuments:
         document = document[0]
-        if (not phraseFilter(document,splitted_query[1])):
-            continue
+        if (len(splitted_query[1]) > 0):
+            if not phraseFilter(document,splitted_query[1]):
+                continue
+        else:
+            if not queryFilter(document,splitted_query[0]):
+                continue            
         
         title_documentVector:dict[int,int] = documentToVec(document,True)
         text_documentVector:dict[int,int] = documentToVec(document)
@@ -249,8 +282,8 @@ def search_engine(query: str)->dict[int,float]:
 
     return combined_cosineScores
 
-# start = time()
-# results = search_engine('isle man')
-# end = time()
-# print("Time taken: ", end - start)
-# print(results)
+start = time()
+results = search_engine('"why am I tired"')
+end = time()
+print("Time taken: ", end - start)
+print(results)
