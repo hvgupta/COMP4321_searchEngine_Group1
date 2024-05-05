@@ -103,6 +103,13 @@ def init_database():
               UNIQUE (word_id, count) ON CONFLICT REPLACE
         )""")
 
+        cursor.execute("""
+            CREATE TABLE pagerank (
+              page_id INTEGER,
+              pr_val INTEGER,
+              UNIQUE (page_id, pr_val) ON CONFLICT REPLACE
+        )""")
+
         connection.commit()
 
     except sqlite3.OperationalError:
