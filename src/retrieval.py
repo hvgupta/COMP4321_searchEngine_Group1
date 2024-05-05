@@ -7,7 +7,6 @@ import sqlite3
 from itertools import chain
 from collections import Counter
 from time import time
-import numpy as np
 
 
 # To Harsh:
@@ -16,12 +15,11 @@ import numpy as np
 # Unless necessary, you are suggested not to add numpy as it may fuck up the project 😔
 # Add oil OwO QwQ
 
-ALPHA:int = 0.6 # how important is titles matching
-BETA:int = 1 - ALPHA # how important is text matching 
+ALPHA:float = 0.6 # how important is titles matching
+BETA:float = 1 - ALPHA # how important is text matching 
 MAX_RESULTS:int = 50 # max results that can be returned
 
 # Create a list of stopwords
-stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 
 # Load database, then create a cursor.
@@ -67,7 +65,7 @@ def parse_string(query: str)->list[list[int]]:
         querywords = phrase.split()
 
         resultwords = [ps.stem(word) for word in querywords if word.lower() not in stopwords]
-        result = r"\b{}\b".format(" ".join(resultwords))
+        result = r"(?<!\S){}(?!\S)".format(" ".join(resultwords))
 
         phrases_no_stopword.append(result)
 
@@ -151,7 +149,6 @@ def queryToVec(queryEncoding:list[int],table:str)->dict[int,int]:
     
     return vector
 
-
 def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->float:
     """
         Input: takes two dictionaries, both of them have the `word_id` as the key and the corresponding tfxidf/max(tf) as the value
@@ -170,7 +167,6 @@ def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->fl
     
     return dotProduct / documentMagnitude
 
-
 def phraseFilter(document_id:int, phases:list[str]) -> bool:
     """
     `Input`: document_id: int: The id of the document
@@ -179,7 +175,6 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
     """
     if (len(phases) == 0 or len(phases[0]) == 0):
         return True
-    
 
     documentTitle_list:list[set[str]] = cursor.execute(
         """
@@ -284,7 +279,7 @@ def search_engine(query: str)->dict[int,float]:
     return combined_cosineScores
 
 # start = time()
-# results = search_engine('"UG"')
+# results = search_engine('hong kong university of science and technology')
 # end = time()
 # print("Time taken: ", end - start)
 # print(results)
