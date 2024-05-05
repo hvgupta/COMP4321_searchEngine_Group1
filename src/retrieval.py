@@ -22,10 +22,11 @@ MAX_RESULTS:int = 50 # max results that can be returned
 
 # Create a list of stopwords
 stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
+stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 
 # Load database, then create a cursor.
 path_of_db = str(Path.cwd()) + '/src/files/database.db'
-connection = sqlite3.connect(path_of_db)
+connection = sqlite3.connect(path_of_db, check_same_thread=False)  # Set check_same_thread to False because Flask initialized the connection in a different thread, this is safe because the search engine is read only
 cursor = connection.cursor()
 
 DOCUMENT_COUNT:int = cursor.execute("""

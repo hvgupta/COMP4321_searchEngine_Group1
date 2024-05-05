@@ -1,0 +1,74 @@
+.main-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    max-height: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+/* Set front page emoji size */
+.main-page > h1 {
+    font-size: 4em;
+    line-height: 0;
+}
+
+/* Set layout of search row */
+.search-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    column-gap: 0.5em;
+    height: 2.25em;
+}
+
+.searchbar {
+    font-family: Inter, "Noto Emoji", sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+    color: var(--base-fg);
+    text-align: left;
+    width: 100%;
+    height: 100%;
+    padding: 0 1em;
+    border: 2px solid var(--base-fg);
+    border-radius: 3em;
+    box-sizing: border-box;
+    /* box-shadow: var(--base-fg) 7px 7px 0; */
+}
+@supports (font-variation-settings: normal) {
+    .searchbar { font-family: InterVariable, "Noto Emoji", sans-serif; }
+}
+
+/* Style link buttons */
+.search-button {
+    background-color: var(--url);
+    color: var(--base-bg);
+    border: none;
+    cursor: pointer;
+    height: 100%;
+    border-radius: 2em;
+    padding: 0 1em;
+    font-size: 1em;
+    text-decoration: none;
+    transition: 200ms;
+}
+.search-button:hover {
+    filter: brightness(1.1);
+}
+.search-button:active {
+    filter: brightness(1.2);
+}
+
+/* Align the footer to the bottom center */
+.main-page-footer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}

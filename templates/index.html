@@ -3,28 +3,39 @@
 <head>
     <meta charset="utf-8">
     <title>COMP4321 Search Engine</title>
-
+    <!-- Load font for title -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Color+Emoji" rel="stylesheet">
+    <!-- Load font for body text -->
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <!-- Load styles -->
     <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="../static/index.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
 <main>
-    <div class="mainPage">
-    <h1 style="text-align:center;"><b> COMP4321 Search Engine</b></h1>
-    <p style="text-align: center">Project by Group 1</p>
-    <div class="mainPage">
-        <p style="text-align:center;">
-            <label for="searchbar"><input type="text" id="searchbar" name="searchbar" class="intro"></label>
-                    <br>
-            <br>
-            <br>
-            <button class="menu_button">Search</button>
-            <button class="menu_button">I'm feeling good!</button>
-        </p>
-    </div>
-</div>
+    <div class="main-page">
+        <!-- Website title -->
+        <h1>🧐</h1>
+        <h2>COMP 4321 Search Engine</h2>
 
+        <!-- Search bar and button -->
+        <form class="search-row" action="{{ url_for('submit_search') }}" method="post">
+            <input type="text" id="searchbar" name="searchbar" class="searchbar" placeholder="🔍">
+            <button type="submit" value="Submit" class="search-button">Search</button>
+        </form>
+        
+        <!-- Footer -->
+        <div class="main-page-footer">
+            <p>Project by Group 1</p>
+            <p>Zhang Zhe, Kong Tsz Yui, Gupta Harsh Vardhan</p>
+            <p>✦</p>
+        </div>
+    </div>
 </main>
 </body>
 </html>

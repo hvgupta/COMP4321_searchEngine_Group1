@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="utf-8">
+    <title>COMP4321 Search Engine</title>
+    <!-- Load font for title -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Color+Emoji" rel="stylesheet">
+    <!-- Load font for body text -->
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <!-- Load styles -->
+    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="../static/index.css">
+    <link rel="stylesheet" href="../static/result.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <!-- Top section (search bar and result count) -->
+    <div class="result-top">
+        <a href="{{ url_for('searchbar') }}"><h2>COMP4321 Search Engine</h2></a>
+        <form class="search-row" action="{{ url_for('submit_search') }}" method="post">
+            <input type="text" id="searchbar" name="searchbar" class="searchbar" placeholder="🔍">
+            <button type="submit" value="Submit" class="search-button">Search</button>
+        </form>
+        <p class="results-count">🧐 Your search for "{{ QUERY }}" returned {{ RESULTS | length }} results.</p>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section">
+        {% for result in RESULTS %}
+            <div class="search-result">
+                <!-- Title hyperlink and score -->
+                <div class="title-score-row">
+                    <a class="result-title-link" href="{{ result.url }}"><h3 class="result-title">{{ result.title }}</h3></a>
+                    <button class="keyword-box score-box">Score: {{ result.score }}</button>
+                </div>
+                <!-- Most frequent stemmed keywords and frequencies -->
+                <div class="keywords-row">
+                    {% for keyword, freq in result.keywords %}
+                        <button class="keyword-box">{{ keyword }}: {{ freq }}</button>
+                    {% endfor %}
+                </div>
+                <!-- URL -->
+                <p class="result-url">🔗 <a href="{{ result.url }}">{{ result.url }}</a></p>
+                <!-- Last modification date, size of page -->
+                <p class="result-date-size">🕒 Last modified: {{ result.time_formatted }} | 📦 Page size: {{ result.size }}</p>
+                <!-- Parent links -->
+                <details class="result-parents-collapse">
+                    <summary class="result-parents-summary">📥 Parent links ({{ result.parent_links | length }})</summary>
+                    <ul class="result-parents-list">
+                        {% for parent in result.parent_links %}
+                            <li class="result-parent-link"><a href="{{ parent }}">{{ parent }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                <!-- Child links -->
+                <details class="result-children-collapse">
+                    <summary class="result-children-summary">📤 Child links ({{ result.child_links | length }})</summary>
+                    <ul class="result-children-list">
+                        {% for child in result.child_links %}
+                            <li class="result-child-link"><a href="{{ child }}">{{ child }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Footer -->
+    <div class="result-page-footer">
+        <p>Project by Group 1</p>
+        <p>Zhang Zhe, Kong Tsz Yui, Gupta Harsh Vardhan</p>
+        <p>✦</p>
+    </div>
+</body>
