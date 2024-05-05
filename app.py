@@ -24,7 +24,8 @@ def submit_search():
     # Pass query into search engine
     # query_parsed: list = retrieval.parse_string(query)
     # search_results_raw: dict = retrieval.search_engine(query_parsed)
-    search_results_raw: dict = retrieval.search_engine([])  # DEBUG SKIP
+    # search_results_raw: dict = retrieval.search_engine([])  # DEBUG SKIP
+    search_results_raw: dict = retrieval.search_engine(query)
 
     # Get data of the search results
     # k: page ID
