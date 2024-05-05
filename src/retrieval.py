@@ -1,17 +1,13 @@
-from urllib.parse import urljoin, urlparse
-from zlib import crc32
-import requests
 import sqlite3
-from email.utils import parsedate_to_datetime
-from datetime import datetime
 import re
-import asyncio
 from pathlib import Path
-import math
+from math import log2
 from nltk.stem import PorterStemmer as Stemmer
 import sqlite3
 from itertools import chain
 from collections import Counter
+from time import time
+import numpy as np
 
 
 # To Harsh:
@@ -20,13 +16,22 @@ from collections import Counter
 # Unless necessary, you are suggested not to add numpy as it may fuck up the project 😔
 # Add oil OwO QwQ
 
+ALPHA:int = 0.6 # how important is titles matching
+BETA:int = 1 - ALPHA # how important is text matching 
+MAX_RESULTS:int = 50 # max results that can be returned
+
 # Create a list of stopwords
+stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 
 # Load database, then create a cursor.
 path_of_db = str(Path.cwd()) + '/src/files/database.db'
 connection = sqlite3.connect(path_of_db, check_same_thread=False)  # Set check_same_thread to False because Flask initialized the connection in a different thread, this is safe because the search engine is read only
 cursor = connection.cursor()
+
+DOCUMENT_COUNT:int = cursor.execute("""
+    SELECT COUNT(page_id) from id_url
+                                """).fetchone()[0]
 
 # Stemmer
 ps = Stemmer()
@@ -36,17 +41,20 @@ with open(stopword, 'r') as file:
     stopwords = file.read().split()
 
 
-def parse_string(query: str):
+def parse_string(query: str)->list[list[int]]:
     """
-    Input: query: str: The string entered in the text box
-    Return: Array of arrays, containing the word_id of the query word
-    For example: [[1], [2,3]]
-    Where [2,3] represents a phrase, while [1] represents a single query word.
+    `Input`: query: str: The string entered in the text box
+    `Return`: Array of arrays, 
+        `index 0`: is the encoding of the all words in the string
+        `index 1`: is the encoding of the words which are phrases
     """
 
     # Create two arrays of phrases and words to be queried.
     phrases = [x.lower() for x in re.findall('"([^"]*)"', query) if x]
-    single_word = [x.lower() for x in re.findall(r'''"[^"]*"|'[^']*'|\b([^\d\W]+)\b''', query) if x]
+    # single_word = [x.lower() for x in re.findall(r'''"[^"]*"|'[^']*'|\b([^\d\W]+)\b''', query) if x]
+    single_word = []
+    for word in query.split():
+        single_word.append(re.sub("[^a-zA-Z-]+", "", word.lower()))
 
     # Remove every stopwords in the single_word as they are not necessary.
     # During the process we will also stem the word
@@ -59,7 +67,7 @@ def parse_string(query: str):
         querywords = phrase.split()
 
         resultwords = [ps.stem(word) for word in querywords if word.lower() not in stopwords]
-        result = ' '.join(resultwords)
+        result = " " + ' '.join(resultwords) + " "
 
         phrases_no_stopword.append(result)
 
@@ -67,85 +75,171 @@ def parse_string(query: str):
     result = []
 
     # Put the converted single word phrase into result
+    phrase = []
     for element in single_word_no_stopword:
-        word_id = cursor.execute("""
-            SELECT word_id FROM word_id_word WHERE word = ? 
-        """, (element,)).fetchone()[0]
-
-        result.append([word_id])
-
-    # Put the converted phrase into a list, then into result
-    # Iterate over the phrases
-    for element in phrases_no_stopword:
-        list_of_word_id = []
-        words = element.split()
-        # Iterate over the word in the phrase
-        for word in words:
+        try: # ignore the word if it is not in the database
             word_id = cursor.execute("""
-                        SELECT word_id FROM word_id_word WHERE word = ? 
-                    """, (word,)).fetchone()[0]
-            list_of_word_id.append(word_id)
+                SELECT word_id FROM word_id_word WHERE word = ? 
+            """, (element,)).fetchone()[0]
+            phrase.append(word_id)
+        except:
+            pass
+    result.append(phrase)
 
-        result.append(list_of_word_id)
-
+    result.append(phrases_no_stopword)
+    
     return result
 
+def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
+    table:str = "inverted_idx"
+    vector:dict[int,int] = {}
+    
+    if fromTitle:
+        table = "title_inverted_idx"
+        
+    wordList:list[list[int]] = cursor.execute(
+        f"""
+            SELECT word_id, count FROM {table} WHERE page_id = ?
+        """, (page_id,)).fetchall() 
+        
+    maxTF:int = cursor.execute(
+        f"""
+            SELECT MAX(count) FROM {table} WHERE page_id = ?                   
+        """, (page_id,)).fetchone()[0]
+    
+    forwardIdx:str = "forward_idx"
+    if fromTitle:
+        forwardIdx = "title_forward_idx"
+        
+    
+    word_ids = [word for word, _ in wordList]
+    word_counts = cursor.execute(
+        f"""
+            SELECT word_id, count FROM {forwardIdx} WHERE word_id IN ({','.join('?' for _ in word_ids)})
+        """, word_ids).fetchall()
+    
+    countOfDocument = {word_id: count for word_id, count in word_counts}
+    
+    for word, tf in wordList:
+        
+        vector[word] = tf * log2(float(DOCUMENT_COUNT) / countOfDocument[word]) / maxTF
+    
+    return vector   
 
-def search_engine(query: list):
-    """
-    Input:
-    """
+def queryToVec(queryEncoding:list[int],table:str)->dict[int,int]:
+    
+    vector:dict[int,int] = {}
+    
+    wordsTF:dict[int,int] = Counter(queryEncoding)
+    maxTF: int = max(wordsTF.values())
+    
+    for word,tf in list(wordsTF.items()):
+        countOfDocument:int = cursor.execute(
+            f"""
+                SELECT COUNT(DISTINCT page_id) FROM {table} WHERE word_id = ?
+            """,(word,)).fetchone()[0] + 1
+        
+        vector[word] = tf * log2(float(DOCUMENT_COUNT)/countOfDocument) / float(maxTF)
+    
+    return vector
 
-    # Create dummy search results list
-    return {
-        1205567751: 3,
-        274824763: 786,
-        920764120: 345,
-        1438583588: 123,
-        1490639970: 43,
-        3598577144: 76,
-        2259713099: 54,
-        4188482033: 89,
-        3498190479: 45,
-        970995164: 67,
-        2118143756: 23,
-        1126196924: 767,
-        1379349482: 435,
-        3567468868: 234,
-        536842977: 675,
-        49979993: 543,
-        3383128572: 87,
-        1328677714: 11,
-        2221854967: 125,
-        1966629410: 314,
-        3194270087: 420,
-        684159280: 99,
-        3818627733: 100,
-        1695535163: 164,
-        2924675998: 890,
-        3008770854: 999,
-        2013978755: 911,
-        4271804973: 534,
-        901923208: 543,
-        3298095965: 679,
-        264773880: 679,
-        422538157: 901,
-        3530799112: 881,
-        1424476838: 949,
-        2679838979: 722,
-        2193500603: 450,
-        1239611934: 441,
-        3480651952: 512,
-        69884693: 256,
-        4118604224: 129,
-        1042299493: 946,
-        3210240025: 871,
-        1946465212: 800,
-        4069572882: 708,
-        969675447: 755,
-        617161231: 245,
-        4019581354: 347,
-        1761706756: 432,
-        2724024481: 555,
-        1393287796: 666
-    }
+
+def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->float:
+    """
+        Input: takes two dictionaries, both of them have the `word_id` as the key and the corresponding tfxidf/max(tf) as the value
+        output: it is a relative output of cosine distance.
+                Magnitude of the query vector is not calculated since it is constant 
+    """
+    
+    if (len(queryVector) == 0 or len(documentVector) == 0):
+        return 0.0
+    
+    reduced_queryVector = {key: value for key, value in queryVector.items() if key in documentVector}
+    reduced_documentVector = {key: value for key, value in documentVector.items() if key in queryVector}
+    
+    dotProduct:float = sum(reduced_queryVector[word] * reduced_documentVector[word] for word in reduced_queryVector)
+    documentMagnitude:float = sum(value**2 for value in documentVector.values()) ** 0.5
+    
+    return dotProduct / documentMagnitude
+
+
+def phraseFilter(document_id:int, phases:list[str]) -> bool:
+    """
+    `Input`: document_id: int: The id of the document
+    `Input`: phases: list[list[int]]: The list of phrases to be queried
+    `Return`: bool: True if the document contains all the phrases, False otherwise
+    """
+    if (len(phases) == 0 or len(phases[0]) == 0):
+        return True
+
+    documentTitle_list:list[set[str]] = cursor.execute(
+        """
+            SELECT word FROM title_page_id_word_stem WHERE page_id = ?
+        """, 
+        (document_id,)).fetchall()
+    documentTitle:str = " ".join(list(chain.from_iterable(documentTitle_list)))
+    
+    documentText_List:list[set[str]] = cursor.execute(
+        """
+            SELECT word FROM page_id_word_stem WHERE page_id = ?
+        """, 
+        (document_id,)).fetchall()
+    documentText:str = " ".join(list(chain.from_iterable(documentText_List)))
+
+    for phrase in phases:
+        
+        if re.match(phrase, documentTitle) == phrase and re.match(phrase, documentText) == phrase:
+            return False    
+
+    return True
+
+def search_engine(query: str):
+    start = time()
+    splitted_query:list[list[int]] = parse_string(query)
+    queryVector_title:dict[int,int] = queryToVec(splitted_query[0],"title_inverted_idx")
+    queryVector_text:dict[int,int] = queryToVec(splitted_query[0],"inverted_idx")
+    
+    allDocuments:list[int] = cursor.execute(
+        """
+            SELECT DISTINCT(page_id) FROM id_url
+        """
+        ).fetchall()
+    
+    title_cosineScores:dict[int,float] = {}
+    text_cosineScores:dict[int,float] = {}
+    for document in allDocuments:
+        document = document[0]
+        if (not phraseFilter(document,splitted_query[1])):
+            continue
+        
+        title_documentVector:dict[int,int] = documentToVec(document,True)
+        text_documentVector:dict[int,int] = documentToVec(document)
+        
+        title_similarity:float = cosineSimilarity(queryVector_title,title_documentVector)
+        text_similarity:float = cosineSimilarity(queryVector_text,text_documentVector)
+        
+        title_cosineScores[document] = title_similarity
+        text_cosineScores[document] = text_similarity
+        
+    title_cosineScores = dict(sorted(title_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
+    text_cosineScores = dict(sorted(text_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
+    
+    combined_cosineScores:dict[int,float] = {}
+    for (title_key,title_val),(text_key,text_val) in zip(title_cosineScores.items(),text_cosineScores.items()):
+        if title_key in combined_cosineScores:
+            combined_cosineScores[title_key] += ALPHA * title_val
+        else:
+            combined_cosineScores[title_key] = ALPHA * title_val
+        
+        if text_key in combined_cosineScores:
+            combined_cosineScores[text_key] += BETA * text_val
+        else:
+            combined_cosineScores[text_key] = BETA * text_val
+    combined_cosineScores = dict(sorted(combined_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
+    
+    end = time()
+    print("Time taken: ", end - start)
+    return combined_cosineScores
+
+# results = search_engine('"Hong Kong" University of Science and Technology')
+# print(results)

@@ -63,27 +63,43 @@ def init_database():
 
         cursor.execute("""
             CREATE TABLE page_id_word (
+              seq INTEGER,
               page_id INTEGER,
               word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE page_id_word_stem (
+              seq INTEGER,
               page_id INTEGER,
               word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word_stem (
+              seq INTEGER,
               page_id INTEGER,
               word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word (
+              seq INTEGER,
               page_id INTEGER,
               word TEXT
             )""")
+
+        cursor.execute("""
+            CREATE TABLE title_forward_idx (
+              word_id INTEGER,
+              count INTEGER
+        )""")
+
+        cursor.execute("""
+            CREATE TABLE forward_idx (
+              word_id INTEGER,
+              count INTEGER
+        )""")
 
         connection.commit()
 
@@ -104,73 +120,11 @@ def create_file_from_db():
             init_database()
             recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
             indexer()
-            create_file_from_db()
-
-        all_page_id = cursor.fetchall()
-
-        for pid in list(chain.from_iterable(all_page_id)):
-            pageinfo = cursor.execute("""
-                SELECT * FROM page_info WHERE page_id = ?
-            """, (pid,)).fetchone()
-
-            url = cursor.execute("""
-                    SELECT url FROM id_url WHERE page_id = ?
-                """, (pid,)).fetchone()[0]
-
-            file.write(pageinfo[3])
-            file.write("\n")
-            file.write(url)
-            file.write("\n")
-
-            file.write(str(datetime.fromtimestamp(pageinfo[2])) + ", " + str(pageinfo[1]) + "\n")
-
-            # Top 10 words
-            list_of_word = cursor.execute("""
-                SELECT word, Count(word) AS Frequency
-                FROM page_id_word
-                WHERE page_id = ?
-                GROUP BY word
-                ORDER BY
-                    Frequency DESC
-                 """, (pid,)).fetchall()
-
-            number = 0
-
-            for word in list_of_word:
-                if number > 9:
-                    break
-                keyword = word[0]  # Unpack the word
-                count = word[1]
-
-                if keyword in stopwords:
-                    continue
-
-                file.write(keyword + " " + str(count) + "; ")
-                number = number + 1
-
-            file.write("\n")
-
-            # Child link
-            list_of_child_id = cursor.execute("""
-                SELECT child_id FROM relation WHERE parent_id = ? limit 10
-            """, (pid,)).fetchall()
-
-            list_of_child_id = list(chain.from_iterable(list_of_child_id))
-
-            for i in range(len(list_of_child_id)):
-                child_link = cursor.execute("""
-                SELECT url FROM id_url WHERE page_id = ?
-            """, (list_of_child_id[i],)).fetchone()[0]
-
-                file.write(child_link + "\n")
-            file.write("-" * 30 + "\n")
 
 
 def main():
     start_time = time.time()
     create_file_from_db()
-    from src.indexer import indexer
-    indexer()
     print("--- %s seconds for creating database ---" % (time.time() - start_time))
 
     os.system("flask run")
