@@ -110,6 +110,11 @@ def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
     if fromTitle:
         forwardIdx = "title_forward_idx"
         
+    word_ids:list[int] = []
+    for word,_ in wordList:
+        word_ids.append(word)
+        
+        
     
     word_ids = [word for word, _ in wordList]
     word_counts = cursor.execute(
@@ -126,6 +131,9 @@ def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
     return vector   
 
 def queryToVec(queryEncoding:list[int],table:str)->dict[int,int]:
+    
+    if (len(queryEncoding) == 0):
+        return {}
     
     vector:dict[int,int] = {}
     
@@ -192,9 +200,12 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
 
     return True
 
-def search_engine(query: str):
-    start = time()
+def search_engine(query: str)->dict[int,float]:
+
     splitted_query:list[list[int]] = parse_string(query)
+    if (len(splitted_query[0]) == 0): # incase query is something out of the db
+        return {}
+    
     queryVector_title:dict[int,int] = queryToVec(splitted_query[0],"title_inverted_idx")
     queryVector_text:dict[int,int] = queryToVec(splitted_query[0],"inverted_idx")
     
@@ -235,10 +246,11 @@ def search_engine(query: str):
         else:
             combined_cosineScores[text_key] = BETA * text_val
     combined_cosineScores = dict(sorted(combined_cosineScores.items(), key=lambda item: item[1],reverse=True)[:MAX_RESULTS])
-    
-    end = time()
-    print("Time taken: ", end - start)
+
     return combined_cosineScores
 
-# results = search_engine('"Hong Kong" University of Science and Technology')
+# start = time()
+# results = search_engine('isle man')
+# end = time()
+# print("Time taken: ", end - start)
 # print(results)
