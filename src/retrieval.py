@@ -16,8 +16,8 @@ import numpy as np
 # Unless necessary, you are suggested not to add numpy as it may fuck up the project 😔
 # Add oil OwO QwQ
 
-ALPHA:int = 0.6 # how important is titles matching
-BETA:int = 1 - ALPHA # how important is text matching 
+ALPHA:float = 0.6 # how important is titles matching
+BETA:float = 1 - ALPHA # how important is text matching 
 MAX_RESULTS:int = 50 # max results that can be returned
 
 # Create a list of stopwords
@@ -66,7 +66,7 @@ def parse_string(query: str)->list[list[int]]:
         querywords = phrase.split()
 
         resultwords = [ps.stem(word) for word in querywords if word.lower() not in stopwords]
-        result = r"\b{}\b".format(" ".join(resultwords))
+        result = r"(?<!\S){}(?!\S)".format(" ".join(resultwords))
 
         phrases_no_stopword.append(result)
 
@@ -178,7 +178,6 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
     """
     if (len(phases) == 0 or len(phases[0]) == 0):
         return True
-    
 
     documentTitle_list:list[set[str]] = cursor.execute(
         """
@@ -282,8 +281,8 @@ def search_engine(query: str)->dict[int,float]:
 
     return combined_cosineScores
 
-# start = time()
-# results = search_engine('"UG"')
-# end = time()
-# print("Time taken: ", end - start)
-# print(results)
+start = time()
+results = search_engine('"PG"')
+end = time()
+print("Time taken: ", end - start)
+print(results)
