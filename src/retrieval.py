@@ -22,10 +22,11 @@ MAX_RESULTS:int = 50 # max results that can be returned
 
 # Create a list of stopwords
 stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
+stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 
 # Load database, then create a cursor.
 path_of_db = str(Path.cwd()) + '/src/files/database.db'
-connection = sqlite3.connect(path_of_db)
+connection = sqlite3.connect(path_of_db, check_same_thread=False)  # Set check_same_thread to False because Flask initialized the connection in a different thread, this is safe because the search engine is read only
 cursor = connection.cursor()
 
 DOCUMENT_COUNT:int = cursor.execute("""
@@ -66,7 +67,7 @@ def parse_string(query: str)->list[list[int]]:
         querywords = phrase.split()
 
         resultwords = [ps.stem(word) for word in querywords if word.lower() not in stopwords]
-        result = " " + ' '.join(resultwords) + " "
+        result = r"\b{}\b".format(" ".join(resultwords))
 
         phrases_no_stopword.append(result)
 
@@ -178,6 +179,7 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
     """
     if (len(phases) == 0 or len(phases[0]) == 0):
         return True
+    
 
     documentTitle_list:list[set[str]] = cursor.execute(
         """
@@ -194,8 +196,7 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
     documentText:str = " ".join(list(chain.from_iterable(documentText_List)))
 
     for phrase in phases:
-        
-        if re.match(phrase, documentTitle) == phrase and re.match(phrase, documentText) == phrase:
+        if not re.search(phrase, documentTitle) and not re.search(phrase, documentText):
             return False    
 
     return True
@@ -283,7 +284,7 @@ def search_engine(query: str)->dict[int,float]:
     return combined_cosineScores
 
 # start = time()
-# results = search_engine('"why am I tired"')
+# results = search_engine('"UG"')
 # end = time()
 # print("Time taken: ", end - start)
 # print(results)

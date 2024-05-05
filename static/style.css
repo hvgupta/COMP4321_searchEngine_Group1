@@ -1,11 +1,47 @@
+/* Global colors */
+:root {
+    --base-bg: #fdf6e3;  /* everforest light medium bg0 */
+    --sec-bg: #efebd4;  /* everforest light medium bg_dim */
+    --dark-bg: #2d353b;  /* everforest dark medium bg0 */
+    --base-fg: #5c6a72;  /* everforest light medium fg */
+    --dark-fg: #d3c6aa;  /* everforest dark medium fg */
+    --url: #8da101;  /* everforest light medium green */
+    --yellow: #dfa000;  /* everforest light medium yellow */
+}
+
+/* Enable smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    background: #F5F5bd;
-    background-size: 600% 400%;
-    border-radius: 10px;
-    font-family: "Jetbrain", "NotoColor", serif;
-    display: grid;
-    margin-bottom: 50px;
-    position: relative;
+    background: var(--base-bg);
+    margin: 0;
+    padding: 0;
+    /* Set font family for body text */
+    font-family: Inter, "Noto Color Emoji", sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+    color: var(--base-fg)
+}
+@supports (font-variation-settings: normal) {
+   body { font-family: InterVariable, "Noto Color Emoji", sans-serif; }
+}
+
+/* Set font family for headings */
+h1, h2, h3 {
+    font-family: "Libre Baskerville", "Noto Color Emoji", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: var(--base-fg)
+}
+/* Set font family for buttons */
+button {
+    font-family: Inter, "Noto Emoji", sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+    color: var(--base-fg)
+}
+@supports (font-variation-settings: normal) {
+    button { font-family: InterVariable, "Noto Emoji", sans-serif; }
 }
 
 section {
@@ -16,104 +52,7 @@ section:target {
     display: block
 }
 
-button {
-    background-color: transparent;
-    cursor: pointer
-}
-
-a, a:active, a:hover, a:visited {
-    color: inherit;
-    text-decoration: none
-}
-
-.menu_button:hover {
-    box-shadow:rgb(0, 0, 0) 2px 3px 0;
-}
-
-.menu_button:active
-{
-    transform: translate(2px, 3px);
-    box-shadow: none;
-}
-
-
-.menu_button {
-    border: 2px solid transparent;
-    color: #000;
-    padding: 10px 21px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    font-family: Jetbrain, serif;
-    border-radius: 36px;
-    font-weight: 700
-}
-
-
-.menu_button:hover {
-    border: 2px solid #000
-}
-
-
-
-
-.menu_button .icon_svg {
-    stroke: #000
-}
-
-
-
-.right {
-    display: flex;
-    justify-content: space-evenly
-}
-
-.copyright_text {
-    position: fixed;
-    bottom: 0;
-    text-align: center;
-    width: 100%
-}
-
-.intro {
-    text-align: left;
-    width: 75%;
-    padding: 25px;
-    margin: 20px auto 0;
-    border: 2px solid #000;
-    border-radius: 20px;
-    box-shadow: rgb(0, 0, 0) 7px 7px 0;
-}
-
-
-#button {
-    position: fixed;
-    text-align: center
-}
-
-
-#button {
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    bottom: 40px;
-    right: 20px;
-    opacity: 0;
-    visibility: visible;
-    z-index: 1000;
-    padding: 6px 0;
-    border-radius: 36px
-}
-
-#button.show {
-    opacity: 1;
-    visibility: visible
-}
-
-.center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%
+/* Set link text color */
+a {
+    color: var(--url)
 }
