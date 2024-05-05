@@ -89,6 +89,18 @@ def init_database():
               word TEXT
             )""")
 
+        cursor.execute("""
+            CREATE TABLE title_forward_idx (
+              word_id INTEGER,
+              count INTEGER
+        )""")
+
+        cursor.execute("""
+            CREATE TABLE forward_idx (
+              word_id INTEGER,
+              count INTEGER
+        )""")
+
         connection.commit()
 
     except sqlite3.OperationalError:
