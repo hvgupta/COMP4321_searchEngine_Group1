@@ -58,10 +58,17 @@ def indexer():
         page_id_word_stem = list(zip([cur_page_id] * len(body_text), body_text))
         title_id_word_stem = list(zip([cur_page_id] * len(title_text), title_text))
 
+        # Add index to page_id word
+        for i in range(len(page_id_word_stem)):
+            page_id_word_stem[i] = (i,) + page_id_word_stem[i]
+
+        for i in range(len(title_id_word_stem)):
+            title_id_word_stem[i] = (i,) + title_id_word_stem[i]
+
         # Put them into database
         cursor.executemany("INSERT INTO word_id_word VALUES (?, ?)", word_id_word)
-        cursor.executemany("INSERT INTO title_page_id_word_stem VALUES (?, ?)", title_id_word_stem)
-        cursor.executemany("INSERT INTO page_id_word_stem VALUES (?, ?)", page_id_word_stem)
+        cursor.executemany("INSERT INTO title_page_id_word_stem VALUES (?, ?, ?)", title_id_word_stem)
+        cursor.executemany("INSERT INTO page_id_word_stem VALUES (?, ?, ?)", page_id_word_stem)
 
         # Count the occurrence of the texts
         count_body = list(Counter(body_text).items())
@@ -76,3 +83,51 @@ def indexer():
 
         # Save the changes to database
         connection.commit()
+
+    # Forward Index
+    lst = cursor.execute("""
+        SELECT word FROM page_id_word_stem
+    """).fetchall()
+
+    words = list(Counter(list(chain.from_iterable(lst))).keys())
+
+    word_list = []
+
+    for word in words:
+        new_lst = cursor.execute("""
+            SELECT page_id FROM page_id_word_stem WHERE word=?
+        """, (word,)).fetchall()
+
+        count = (len(list(Counter(list(chain.from_iterable(new_lst))).keys())))
+
+        word_id = int(crc32(str.encode(word)))
+        word_list.append((word_id, count))
+
+    cursor.executemany("""
+        INSERT INTO forward_idx VALUES (?,?)
+    """, word_list)
+
+    lst = cursor.execute("""
+        SELECT word FROM title_page_id_word_stem
+    """).fetchall()
+
+    words = list(Counter(list(chain.from_iterable(lst))).keys())
+
+    word_list = []
+
+    for word in words:
+        new_lst = cursor.execute("""
+            SELECT page_id FROM title_page_id_word_stem WHERE word=?
+        """, (word,)).fetchall()
+
+        count = (len(list(Counter(list(chain.from_iterable(new_lst))).keys())))
+
+        word_id = int(crc32(str.encode(word)))
+
+        word_list.append((word_id, count))
+
+    cursor.executemany("""
+        INSERT INTO title_forward_idx VALUES (?,?)
+    """, word_list)
+
+    connection.commit()
