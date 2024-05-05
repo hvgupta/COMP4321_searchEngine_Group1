@@ -7,7 +7,6 @@ import sqlite3
 from itertools import chain
 from collections import Counter
 from time import time
-import numpy as np
 
 
 # To Harsh:
@@ -21,7 +20,6 @@ BETA:float = 1 - ALPHA # how important is text matching
 MAX_RESULTS:int = 50 # max results that can be returned
 
 # Create a list of stopwords
-stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 
 # Load database, then create a cursor.
@@ -151,7 +149,6 @@ def queryToVec(queryEncoding:list[int],table:str)->dict[int,int]:
     
     return vector
 
-
 def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->float:
     """
         Input: takes two dictionaries, both of them have the `word_id` as the key and the corresponding tfxidf/max(tf) as the value
@@ -169,7 +166,6 @@ def cosineSimilarity(queryVector:dict[int,int],documentVector:dict[int,int])->fl
     documentMagnitude:float = sum(value**2 for value in documentVector.values()) ** 0.5
     
     return dotProduct / documentMagnitude
-
 
 def phraseFilter(document_id:int, phases:list[str]) -> bool:
     """
@@ -282,8 +278,8 @@ def search_engine(query: str)->dict[int,float]:
 
     return combined_cosineScores
 
-start = time()
-results = search_engine('"PG"')
-end = time()
-print("Time taken: ", end - start)
-print(results)
+# start = time()
+# results = search_engine('hong kong university of science and technology')
+# end = time()
+# print("Time taken: ", end - start)
+# print(results)

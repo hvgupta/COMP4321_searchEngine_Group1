@@ -4,6 +4,7 @@ from datetime import datetime
 import sqlite3
 from itertools import chain
 import time
+import src.pageRank as pageRank
 
 connection = sqlite3.connect('./src/files/database.db')
 
@@ -100,6 +101,12 @@ def init_database():
               word_id INTEGER,
               count INTEGER
         )""")
+        
+        cursor.execute("""
+            CREATE TABLE page_rank (
+              page_id INTEGER,
+              rank FLOAT
+        )""")
 
         connection.commit()
 
@@ -120,6 +127,7 @@ def create_file_from_db():
             init_database()
             recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
             indexer()
+            pageRank.startPageRank()
 
 
 def main():
