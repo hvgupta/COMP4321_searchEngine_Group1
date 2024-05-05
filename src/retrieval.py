@@ -240,5 +240,5 @@ def search_engine(query: str):
     print("Time taken: ", end - start)
     return combined_cosineScores
 
-results = search_engine('"Hong Kong" University of Science and Technology')
-print(results)
+# results = search_engine('"Hong Kong" University of Science and Technology')
+# print(results)
