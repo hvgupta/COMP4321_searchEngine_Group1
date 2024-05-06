@@ -6,6 +6,8 @@ from itertools import chain
 import time
 import src.pageRank as pageRank
 
+os.remove("./src/files/database.db")
+
 connection = sqlite3.connect('./src/files/database.db')
 
 with open("./src/files/stopwords.txt", 'r') as file:

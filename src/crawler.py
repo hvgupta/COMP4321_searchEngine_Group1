@@ -147,6 +147,10 @@ def get_info(cur_url, soup, last_modif, parent_url=None):
 
     page_id_text = list(zip([cur_page_id] * len(text), text))
 
+    # To add index to tuple
+    for i in range(len(page_id_text)):
+        page_id_text[i] = (i,) + page_id_text[i]
+
     return cur_page_id, parent_page_id, title, cur_url_parsed, last_modif, page_id_text
 
 
@@ -269,7 +273,7 @@ def insert_data_into_page_info(page_id, size, last_modif, title):
 
 def insert_data_into_page_id_word(list_of_id):
     cursor.executemany("""
-        INSERT INTO page_id_word VALUES (?,?)
+        INSERT INTO page_id_word VALUES (?,?,?)
         """, list_of_id)
 
 
@@ -282,8 +286,11 @@ def insert_data_into_title_page_id_word(title, page_id):
     while "" in title:
         title.remove("")
 
-    new_list = zip([page_id] * len(title), title)
+    new_list = list(zip([page_id] * len(title), title))
+
+    for i in range(len(new_list)):
+        new_list[i] = (i,) + new_list[i]
 
     cursor.executemany("""
-        INSERT INTO title_page_id_word VALUES (?,?)
+        INSERT INTO title_page_id_word VALUES (?,?,?)
         """, new_list)
