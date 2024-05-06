@@ -5,8 +5,11 @@ import sqlite3
 from itertools import chain
 import time
 import src.pageRank as pageRank
+from pathlib import Path
 
-os.remove("./src/files/database.db")
+path_of_db = str(Path.cwd()) + '/src/files/database.db'
+
+os.remove(path_of_db)
 
 connection = sqlite3.connect('./src/files/database.db')
 
@@ -122,7 +125,6 @@ def create_file_from_db():
     init_database()
     recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
     indexer()
-    pageRank.startPageRank()
 
 
 def main():
