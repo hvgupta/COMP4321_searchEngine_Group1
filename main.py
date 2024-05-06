@@ -119,19 +119,16 @@ def create_file_from_db():
     from src.crawler import recursively_crawl
     from src.crawler import closeCrawler
     from src.indexer import indexer
-    import src.pageRank as pageRank
     init_database()
     recursively_crawl(num_pages=300, url="https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")
     closeCrawler()
     indexer()
-    pageRank.startPageRank()
 
 
 def main():
     start_time = time.time()
     create_file_from_db()
     print("--- %s seconds for creating database ---" % (time.time() - start_time))
-
     connection.close()
     os.system("flask run")
 
