@@ -159,6 +159,7 @@ def recursively_crawl(num_pages: int, url: str):
     queue = []  # Queue for BFS
     parent_links = []
     canBreak = 0
+    is_init = 1
 
     visited = []  # Visited pages
 
@@ -167,7 +168,9 @@ def recursively_crawl(num_pages: int, url: str):
     # num_pages > 0: To ensure we are in the limit
     # queue != []: To ensure the website still have sub-links.
     while num_pages > 0 and queue != [] and canBreak == 0:
+
         count += 1
+
         cur_url = queue.pop(0)
 
         if count != 1:
@@ -203,14 +206,49 @@ def recursively_crawl(num_pages: int, url: str):
             connection.commit()
             continue
 
+        # If the database has the exact item (Which is page_id), and the last modification date is newer / the same
+        # as the crawled date, skip adding to database.
+        result = cursor.execute("""
+            SELECT * FROM page_info WHERE page_id=?
+        """, (cur_page_id,))
+
+        fetch1 = result.fetchone()
+
+        if fetch1 is not None:
+            # Not a valid page
+            if fetch1[2] is None and last_modif is None:
+                continue
+            # If the date of last modification is older
+            if fetch1[2] >= last_modif:
+                canBreak = 1
+                print("Page crawling has been completed before! Skip crawling.")
+                if is_init:
+                    break
+                else:
+                    continue
+            else:
+                # Delete the original data, then insert new data
+                cursor.execute("DELETE FROM relation WHERE parent_id = ?", (cur_page_id,))
+                cursor.execute("DELETE FROM page_id_word WHERE page_id = ?", (cur_page_id,))
+                cursor.execute("DELETE FROM page_info WHERE page_id = ?", (cur_page_id,))
+                cursor.execute("DELETE FROM title_page_id_word WHERE page_id = ?", (cur_page_id,))
+                insert_data_into_relation(int(cur_page_id), int(parent_page_id))
+                insert_data_into_page_info(cur_page_id, size, last_modif, title)
+                insert_data_into_page_id_word(text)
+                insert_data_into_title_page_id_word(title, cur_page_id)
+                connection.commit()
+                is_init = 0
+                num_pages -= 1
+                continue
+
         insert_data_into_relation(int(cur_page_id), int(parent_page_id))
         insert_data_into_page_info(cur_page_id, size, last_modif, title)
         insert_data_into_id_url(cur_page_id, cur_url)
         insert_data_into_page_id_word(text)
         insert_data_into_title_page_id_word(title, cur_page_id)
         connection.commit()
+        is_init = 0
         num_pages -= 1
-
     connection.commit()
 
 
@@ -256,3 +294,6 @@ def insert_data_into_title_page_id_word(title, page_id):
     cursor.executemany("""
         INSERT INTO title_page_id_word VALUES (?,?,?)
         """, new_list)
+
+def closeCrawler()->None:
+    connection.close()
