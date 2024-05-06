@@ -1,7 +1,7 @@
 import sqlite3
 import datetime
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import Dict
 
 # Connect to the documents database
@@ -111,6 +111,14 @@ def page_id_to_stems(id: int, num_stems: int = 5, include_title: bool = True) ->
 
     # Combine stems and counts
     stems_counts: list[tuple[str, int]] = list(zip(stems, freqs))
+
+    # Merge the keyword together
+    d = defaultdict(int)
+
+    for k, v in stems_counts:
+        d[k] += v
+
+    stems_counts = list(d.items())
 
     # Sort and filter to get `num_stems` most frequent stems
     return sorted(stems_counts, key=lambda x: x[1], reverse=True)[0: num_stems]
