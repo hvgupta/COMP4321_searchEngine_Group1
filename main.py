@@ -1,14 +1,10 @@
 # import argparse
 import os
-from datetime import datetime
 import sqlite3
-from itertools import chain
 import time
-import src.pageRank as pageRank
 from pathlib import Path
 
 path_of_db = str(Path.cwd()) + '/src/files/database.db'
-
 os.remove(path_of_db)
 
 connection = sqlite3.connect('./src/files/database.db')
