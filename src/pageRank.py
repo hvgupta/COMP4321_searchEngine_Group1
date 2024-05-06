@@ -44,7 +44,9 @@ def page_rank(curPageRankScore:np.ndarray[int],adjacency_matrix:np.ndarray[np.nd
     return page_rank_scores
 
 def startPageRank()->None:
-    allPages:list[int] = [page[0] for page in cursor.execute("SELECT page_id FROM page_info").fetchall()]
+    allPages:list[int] = [page[0] for page in cursor.execute("SELECT DISTINCT page_id FROM id_url").fetchall()]
     adjacencyMatrix:np.ndarray[np.ndarray[float]] = generateAdjacencyMatrix(allPages)
     pageRankScores:np.ndarray[float] = page_rank(np.ones(len(allPages)),adjacencyMatrix, 0.85)
     populate_pageRank(pageRankScores,allPages)
+    
+startPageRank()
