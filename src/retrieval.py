@@ -285,8 +285,8 @@ def search_engine(query: str)->dict[int,float]:
 
     return combined_Scores
 
-start = time()
-results = search_engine('"UG" PG')
-end = time()
-print("Time taken: ", end - start)
-print(results)
+# start = time()
+# results = search_engine('"Hong Kong" University of Science and Technology')
+# end = time()
+# print("Time taken: ", end - start)
+# print(results)
