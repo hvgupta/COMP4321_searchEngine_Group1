@@ -294,3 +294,6 @@ def insert_data_into_title_page_id_word(title, page_id):
     cursor.executemany("""
         INSERT INTO title_page_id_word VALUES (?,?,?)
         """, new_list)
+
+def closeCrawler()->None:
+    connection.close()

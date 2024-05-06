@@ -107,4 +107,6 @@ def indexer():
     """, words)
 
     connection.commit()
+    
+    connection.close()
 

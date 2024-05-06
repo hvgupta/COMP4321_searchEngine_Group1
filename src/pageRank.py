@@ -7,13 +7,16 @@ connection = sqlite3.connect(path_of_db, check_same_thread=False)  # Set check_s
 cursor = connection.cursor()
 
 def populate_pageRank(scores:list[int],allPages:list[int])->None:
-    cursor.execute("DELETE FROM page_rank")
+    try:
+        cursor.execute("DELETE FROM page_rank")
+    except:
+        pass
     data:list[tuple[int,float]] = [(allPages[i],scores[i]) for i in range(len(allPages))]
     cursor.executemany("INSERT INTO page_rank(page_id,score) VALUES(?,?)",data)
     connection.commit()
 
 def generateAdjacencyMatrix(allPages:list[int])->np.ndarray[np.ndarray[float]]:
-    matrixMap:dict[dict[int,float]] = {key:{val:0 for val in allPages} for key in allPages}
+    matrixMap:dict[dict[int,float]] = {startNode:{endNode:0 for endNode in allPages} for startNode in allPages}
     
     for page in allPages:
         children:list[int] =  cursor.execute("SELECT child_id FROM relation WHERE parent_id = ?", (page,)).fetchall()
