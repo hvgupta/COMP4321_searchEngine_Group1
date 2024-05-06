@@ -71,14 +71,12 @@ def init_database():
 
         cursor.execute("""
             CREATE TABLE page_id_word_stem (
-              seq INTEGER,
               page_id INTEGER,
               word TEXT
             )""")
 
         cursor.execute("""
             CREATE TABLE title_page_id_word_stem (
-              seq INTEGER,
               page_id INTEGER,
               word TEXT
             )""")

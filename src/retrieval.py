@@ -4,7 +4,6 @@ from pathlib import Path
 from math import log2
 from nltk.stem import PorterStemmer as Stemmer
 import sqlite3
-from itertools import chain
 from collections import Counter
 from time import time
 
@@ -15,7 +14,7 @@ from time import time
 # Unless necessary, you are suggested not to add numpy as it may fuck up the project 😔
 # Add oil OwO QwQ
 
-ALPHA:float = 0.6 # how important is titles matching
+ALPHA:float = 0.75 # how important is titles matching
 BETA:float = 1 - ALPHA # how important is text matching 
 MAX_RESULTS:int = 50 # max results that can be returned
 
@@ -180,15 +179,15 @@ def phraseFilter(document_id:int, phases:list[str]) -> bool:
         """
             SELECT word FROM title_page_id_word_stem WHERE page_id = ?
         """, 
-        (document_id,)).fetchall()
-    documentTitle:str = " ".join(list(chain.from_iterable(documentTitle_list)))
+        (document_id,)).fetchone()
+    documentTitle:str = documentTitle_list[0]
     
-    documentText_List:list[set[str]] = cursor.execute(
+    documentText_list:list[set[str]] = cursor.execute(
         """
             SELECT word FROM page_id_word_stem WHERE page_id = ?
         """, 
-        (document_id,)).fetchall()
-    documentText:str = " ".join(list(chain.from_iterable(documentText_List)))
+        (document_id,)).fetchone()
+    documentText:str = documentText_list[0]
 
     for phrase in phases:
         if not re.search(phrase, documentTitle) and not re.search(phrase, documentText):
@@ -286,8 +285,8 @@ def search_engine(query: str)->dict[int,float]:
 
     return combined_Scores
 
-# start = time()
-# results = search_engine('"UG" PG')
-# end = time()
-# print("Time taken: ", end - start)
-# print(results)
+start = time()
+results = search_engine('"UG" PG')
+end = time()
+print("Time taken: ", end - start)
+print(results)
