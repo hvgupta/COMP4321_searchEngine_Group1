@@ -49,4 +49,4 @@ def startPageRank()->None:
     pageRankScores:np.ndarray[float] = page_rank(np.ones(len(allPages)),adjacencyMatrix, 0.85)
     populate_pageRank(pageRankScores,allPages)
     
-startPageRank()
+# startPageRank()
