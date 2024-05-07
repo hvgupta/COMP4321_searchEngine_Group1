@@ -22,10 +22,14 @@
     <div class="result-top">
         <a href="{{ url_for('searchbar') }}"><h2>COMP4321 Search Engine</h2></a>
         <form class="search-row" action="{{ url_for('submit_search') }}" method="post">
-            <input type="text" id="searchbar" name="searchbar" class="searchbar" placeholder="🔍">
+            <input type="text" id="searchbar" name="searchbar" class="searchbar" placeholder="🔍 {{ QUERY }} ">
             <button type="submit" value="Submit" class="search-button">Search</button>
         </form>
-        <p class="results-count">🧐 Your search for <span class=result-top-query>{{ QUERY }}</span> returned {{ RESULTS | length }} results.</p>
+        {% if RESULTS | length != 1 %}
+            <p class="results-count">🧐 {{ RESULTS | length }} results | ⏱️ {{ TIME_TAKEN }}s</p>
+        {% else %}
+            <p class="results-count">🧐 {{ RESULTS | length }} result | ⏱️ {{ TIME_TAKEN }}s</p>
+        {% endif %}
     </div>
 
     <!-- Results -->

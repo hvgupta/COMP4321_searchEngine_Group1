@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import sqlite3
+import timeit
 
 from typing import List
 
@@ -21,11 +22,14 @@ def submit_search():
     # Get query from search bar
     query: str = request.form['searchbar']
 
+    # Time the search operation
+    start_time: float = timeit.default_timer()
     # Pass query into search engine
     # query_parsed: list = retrieval.parse_string(query)
     # search_results_raw: dict = retrieval.search_engine(query_parsed)
     # search_results_raw: dict = retrieval.search_engine([])  # DEBUG SKIP
     search_results_raw: dict = retrieval.search_engine(query)
+    search_time_taken: float = timeit.default_timer() - start_time
 
     # Get data of the search results
     # k: page ID
@@ -38,7 +42,8 @@ def submit_search():
     return render_template(
         "search_results.html",
         QUERY=query,
-        RESULTS=search_results
+        RESULTS=search_results,
+        TIME_TAKEN=search_time_taken
     )
 
 if __name__ == "__main__":
