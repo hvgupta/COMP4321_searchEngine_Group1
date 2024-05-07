@@ -5,7 +5,10 @@ import sqlite3
 from itertools import chain
 import time
 
-os.remove("./src/files/database.db")
+try:
+    os.remove("./src/files/database.db")
+except:
+    pass
 
 connection = sqlite3.connect('./src/files/database.db')
 
