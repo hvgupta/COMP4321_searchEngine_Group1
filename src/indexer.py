@@ -157,4 +157,6 @@ def indexer():
     startPageRank()
 
     connection.commit()
+    
+    connection.close()
 

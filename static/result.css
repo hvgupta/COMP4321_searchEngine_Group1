@@ -22,6 +22,11 @@
     word-break: break-word;
 }
 
+/* Change text color of search query in results page */
+.result-top-query {
+    color: var(--url)
+}
+
 /* Set layout of results display */
 .results-section {
     display: flex;

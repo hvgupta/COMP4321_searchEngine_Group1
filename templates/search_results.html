@@ -25,7 +25,7 @@
             <input type="text" id="searchbar" name="searchbar" class="searchbar" placeholder="🔍">
             <button type="submit" value="Submit" class="search-button">Search</button>
         </form>
-        <p class="results-count">🧐 Your search for "{{ QUERY }}" returned {{ RESULTS | length }} results.</p>
+        <p class="results-count">🧐 Your search for <span class=result-top-query>{{ QUERY }}</span> returned {{ RESULTS | length }} results.</p>
     </div>
 
     <!-- Results -->
