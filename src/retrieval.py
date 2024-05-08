@@ -6,6 +6,7 @@ from nltk.stem import PorterStemmer as Stemmer
 import sqlite3
 from collections import Counter
 from time import time
+import numpy as np
 
 
 # To Harsh:
@@ -53,12 +54,14 @@ def parse_string(query: str)->list[list[int]]:
         `index 0`: is the encoding of the all words in the string
         `index 1`: is the encoding of the words which are phrases
     """
-
+    result = []
     # Create two arrays of phrases and words to be queried.
-    phrases = [x.lower() for x in re.findall('"([^"]*)"', query) if x]
     # single_word = [x.lower() for x in re.findall(r'''"[^"]*"|'[^']*'|\b([^\d\W]+)\b''', query) if x]
+    start = time()
     single_word = []
-    for word in query.split():
+    for idx,word in enumerate(query.split()):
+        if (idx == 10000):
+            break
         processedWord:str = re.sub("[^a-zA-Z-]+", "", word.lower())
         stemmedWord:str
         if (processedWord not in stopwords):
@@ -67,15 +70,15 @@ def parse_string(query: str)->list[list[int]]:
                 single_word.append(globalWordtoID[stemmedWord])
             except:
                 pass
-    result = []
     result.append(single_word)
+    end = time()
+    print("time taken for query:", end - start)
     
     # Remove every stopwords in the single_word as they are not necessary.
     # During the process we will also stem the word
     # single_word_no_stopword = [ps.stem(x) for x in single_word if x not in stopwords]
     phrases_no_stopword = []
-    # Remove every stopwords in the phrases as they are not necessary.
-    # During the process we will also stem the word
+    phrases = [x.lower() for x in re.findall('"([^"]*)"', query) if x]
     for phrase in phrases:
         querywords = phrase.split()
 
@@ -200,7 +203,7 @@ def queryFilter(document_id:int, query:list[int]) -> bool:
     return False
 
 def search_engine(query: str)->dict[int,float]:
-
+    
     splitted_query:list[list[int]] = parse_string(query)
     if (len(splitted_query[0]) == 0): # incase query is something out of the db
         return {}
@@ -210,6 +213,7 @@ def search_engine(query: str)->dict[int,float]:
     
     title_cosineScores:dict[int,float] = {}
     text_cosineScores:dict[int,float] = {}
+
     for document in allDocs:
         document = document[0]
         if (len(splitted_query[1]) > 0):
