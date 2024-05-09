@@ -39,7 +39,7 @@ cursor = connection.cursor()
 
 DOCUMENT_COUNT:int = cursor.execute(
     """
-        SELECT COUNT(page_id) FROM id_url                                 
+        SELECT COUNT(page_id) FROM id_url
     """).fetchone()[0]
 
 # Stemmer
@@ -57,7 +57,7 @@ def parse_string(query: str)->list[list[int]]:
         `index 0`: is the encoding of the all words in the string
         `index 1`: is the encoding of the words which are phrases
     """
-    result = []
+    resultArray = []
     # Create two arrays of phrases and words to be queried.
     # single_word = [x.lower() for x in re.findall(r'''"[^"]*"|'[^']*'|\b([^\d\W]+)\b''', query) if x]
     start = time()
@@ -73,7 +73,7 @@ def parse_string(query: str)->list[list[int]]:
                 single_word.append(globalWordtoID[stemmedWord])
             except:
                 pass
-    result.append(single_word)
+    resultArray.append(single_word)
     end = time()
     print("time taken for query:", end - start)
     
@@ -90,9 +90,9 @@ def parse_string(query: str)->list[list[int]]:
 
         phrases_no_stopword.append(result)
 
-    result.append(phrases_no_stopword)
+    resultArray.append(phrases_no_stopword)
     
-    return result
+    return resultArray
 
 def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
     table:str = "inverted_idx"
@@ -287,8 +287,8 @@ for word_id,word in cursor.execute(
     globalWordtoID[word] = word_id
 
 
-# start = time()
-# results = search_engine('this is a very long query that is not present in the database and should return nothing')
-# end = time()
-# print("time taken: ", end - start)
-# print(results)
+start = time()
+results = search_engine('"UG"')
+end = time()
+print("time taken: ", end - start)
+print(results)
