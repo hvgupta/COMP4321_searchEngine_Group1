@@ -35,6 +35,7 @@
     text-align: left;
     width: 100%;
     height: 100%;
+    min-width: 30vw;
     padding: 0 1em;
     border: 2px solid var(--base-fg);
     border-radius: 3em;
@@ -63,6 +64,18 @@
 }
 .search-button:active {
     filter: brightness(1.2);
+}
+
+/* Style history dropdown menu */
+.clear-dropdown {
+    border: unset;
+    background-color: inherit;
+    color: var(--url);
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    max-width: 4.75em;
 }
 
 /* Align the footer to the bottom center */

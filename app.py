@@ -17,8 +17,12 @@ def searchbar():
 
     # Get search history
     history = json.loads(request.cookies.get('history', default="{}"))
+    # print(history)  # DEBUG PRINT
 
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        HISTORY=history
+    )
 
 @app.route("/search/", methods=['POST'])
 def submit_search():
@@ -27,7 +31,10 @@ def submit_search():
     """
 
     # Get query from search bar
-    query: str = request.form['searchbar']
+    query: str = request.form.get('searchbar')
+    # or history dropdown menu
+    if not query:
+        query = request.form.get('history')
 
     # Time the search operation
     start_time: float = timeit.default_timer()
@@ -57,8 +64,9 @@ def submit_search():
     )
 
     # Add query to search history
-    history: List[str] = json.loads(request.cookies.get('history', default="{}"))
-    history.append(query)
+    history: List[str] = json.loads(request.cookies.get('history', default="[]"))
+    if query not in history:
+        history.append(query)
     resp.set_cookie("history", json.dumps(history))
 
     return resp
