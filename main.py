@@ -4,8 +4,10 @@ import sqlite3
 import time
 from pathlib import Path
 
-path_of_db = str(Path.cwd()) + '/src/files/database.db'
-os.remove(path_of_db)
+try:
+    os.remove("./src/files/database.db")
+except:
+    pass
 
 connection = sqlite3.connect('./src/files/database.db')
 

@@ -2,7 +2,7 @@
 
 ## Project Phase 1: User manual
 
-The project is based on Python, version ***3.11.0***. The project uses the following packages:
+The project is based on Python, version ***3.12.0***. The project uses the following packages:
 
 - urllib.parse for handling URLs
 - zlib for providing crc32 function which is used to generate page_id
@@ -13,16 +13,19 @@ The project is based on Python, version ***3.11.0***. The project uses the follo
 - re for regex, to remove the symbols and numbers in the documents
 - asyncio, for increasing the running speed
 - pathlib to get the absolute path of the files so that the database file can be accessed correctly
-- signal and contextmanager, for measuring the running time of web crawling page.
 - nltk.stem as stemmer
 - itertools, for converting list of 1-tuple to a list
 - collections, for the occurrence of the texts
+- numpy, for calculating the pagerank and
+- math, for the calculation of log2 for the tfxidf.
 - time, for measuring the overall running time of the program
+- flask, for the frontend
+- timeit, to count the running time for the query. 
 - argparse, for accepting flags for main.py
 
-Users are required to execute the command on a **_Linux-based_** operating system, with bash or zsh as the shell.
+Users are suggested to execute the command on a **_Unix-based_** operating system, with bash or zsh as the shell. However, the code can also be run on other operating systems, provided that users will have to run a different commands. 
 
-To run the test program, users should do the following. 
+To run the program, users should do the following. 
 
 1. Users need to ensure they have installed the correct python version. Direct to the directory 
 
@@ -34,10 +37,17 @@ To run the test program, users should do the following.
 
 3. Activate the virtual environment using the following command.
 
+    (Unix-based OS)
     ```bash
     source .venv/bin/activate
     ```
 
+    (Windows)
+    ```bash
+    .\.venv\Scripts\activate.bat
+    ```
+    
+    
 4. Install the required package
 
     ```bash
