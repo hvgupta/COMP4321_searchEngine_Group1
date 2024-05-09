@@ -287,8 +287,8 @@ for word_id,word in cursor.execute(
     globalWordtoID[word] = word_id
 
 
-start = time()
-results = search_engine('"UG"')
-end = time()
-print("time taken: ", end - start)
-print(results)
+# start = time()
+# results = search_engine('"UG"')
+# end = time()
+# print("time taken: ", end - start)
+# print(results)
