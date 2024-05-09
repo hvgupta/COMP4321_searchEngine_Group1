@@ -1,9 +1,8 @@
 # import argparse
 import os
-from datetime import datetime
 import sqlite3
-from itertools import chain
 import time
+from pathlib import Path
 
 try:
     os.remove("./src/files/database.db")

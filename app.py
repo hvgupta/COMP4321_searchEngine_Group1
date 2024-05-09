@@ -46,5 +46,5 @@ def submit_search():
         TIME_TAKEN=search_time_taken
     )
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     app.run(debug=True)

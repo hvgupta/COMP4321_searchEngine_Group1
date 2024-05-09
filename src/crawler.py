@@ -31,10 +31,10 @@ async def get_soup(url: str) -> (bsoup, int, int, int):
     # Try to get the data. If failed, then the program terminates.
     # Set a timeout period
     try:
-        request = requests.get(url, timeout=5)
+        request = requests.get(url, timeout=15)
 
     except requests.exceptions.Timeout:
-        print("Crawling the page " + url + " exceed 5 second! Skipping crawling the page!")
+        print("Crawling the page " + url + " exceed 15 second! Skipping crawling the page!")
         return bsoup(""), 0, 0, 408
 
     except:

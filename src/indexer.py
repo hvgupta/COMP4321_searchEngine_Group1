@@ -6,7 +6,6 @@ from itertools import chain
 from collections import Counter
 import numpy as np
 
-
 ps = Stemmer()
 
 db_path = str(Path.cwd()) + '/src/files/database.db'
@@ -16,6 +15,9 @@ stopword = str(Path.cwd()) + '/src/files/stopwords.txt'
 with open(stopword, 'r') as file:
     stopwords = file.read().split()
 
+# Initialize the database
+connection = sqlite3.connect(db_path)
+cursor = connection.cursor()
 
 def stemWords(words: list) -> list:
     return [ps.stem(word) for word in words]
@@ -24,23 +26,16 @@ def stemWords(words: list) -> list:
 def removeStopWords(words: list[str]) -> list[str]:
     return [word for word in words if word not in stopwords]
 
-# Initialize the database
-connection = sqlite3.connect(db_path)
-cursor = connection.cursor()
-
 
 def populate_pageRank(scores: list[int], allPages: list[int]) -> None:
-    try:
-        cursor.execute("DELETE FROM page_rank")
-    except:
-        pass
+    cursor.execute("DELETE FROM page_rank")
     data: list[tuple[int, float]] = [(allPages[i], scores[i]) for i in range(len(allPages))]
     cursor.executemany("INSERT INTO page_rank(page_id,score) VALUES(?,?)", data)
     connection.commit()
 
 
 def generateAdjacencyMatrix(allPages: list[int]) -> np.ndarray[np.ndarray[float]]:
-    matrixMap: dict[dict[int, float]] = {startNode: {endNode: 0 for endNode in allPages} for startNode in allPages}
+    matrixMap: dict[dict[int, float]] = {key: {val: 0 for val in allPages} for key in allPages}
 
     for page in allPages:
         children: list[int] = cursor.execute("SELECT child_id FROM relation WHERE parent_id = ?", (page,)).fetchall()
@@ -73,7 +68,7 @@ def page_rank(curPageRankScore: np.ndarray[int], adjacency_matrix: np.ndarray[np
 
 
 def startPageRank() -> None:
-    allPages: list[int] = [page[0] for page in cursor.execute("SELECT DISTINCT page_id FROM id_url").fetchall()]
+    allPages: list[int] = [page[0] for page in cursor.execute("SELECT page_id FROM id_url").fetchall()]
     adjacencyMatrix: np.ndarray[np.ndarray[float]] = generateAdjacencyMatrix(allPages)
     pageRankScores: np.ndarray[float] = page_rank(np.ones(len(allPages)), adjacencyMatrix, 0.85)
     populate_pageRank(pageRankScores, allPages)
