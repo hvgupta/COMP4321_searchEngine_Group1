@@ -37,7 +37,10 @@ path_of_db = str(Path.cwd()) + '/src/files/database.db'
 connection = sqlite3.connect(path_of_db, check_same_thread=False)  # Set check_same_thread to False because Flask initialized the connection in a different thread, this is safe because the search engine is read only
 cursor = connection.cursor()
 
-DOCUMENT_COUNT:int = 297
+DOCUMENT_COUNT:int = cursor.execute(
+    """
+        SELECT COUNT(page_id) FROM id_url
+    """).fetchone()[0]
 
 # Stemmer
 ps = Stemmer()
