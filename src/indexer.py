@@ -43,7 +43,7 @@ def generateAdjacencyMatrix(allPages: list[int]) -> np.ndarray[np.ndarray[float]
             matrixMap[page][child[0]] = 1
 
     matrixList: list[list[float]] = [[val for val in matrixMap[key].values()] for key in matrixMap.keys()]
-    return np.array(matrixList)
+    return np.array(matrixList).T
 
 
 # this code was written by the author of this article: https://medium.com/@TadashiHomer/understanding-and-implementing-the-pagerank-algorithm-in-python-2ce8683f17a3
