@@ -24,9 +24,15 @@
         <h2>COMP 4321 Search Engine</h2>
 
         <!-- Search bar and button -->
-        <form class="search-row" action="{{ url_for('submit_search') }}" method="post">
+        <form class="search-row" name="search-row" action="{{ url_for('submit_search') }}" method="post">
             <input type="text" id="searchbar" name="searchbar" class="searchbar" placeholder="🔍">
             <button type="submit" value="Submit" class="search-button">Search</button>
+            <select name="history" id="history" class="clear-dropdown" onchange="this.form.submit()">
+                <option value="history" selected disabled>History</option>
+                {% for query in HISTORY %}
+                    <option value="{{ query }}">{{ query }}</option>
+                {% endfor %}
+            </select>
         </form>
         
         <!-- Footer -->
