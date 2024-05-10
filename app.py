@@ -56,13 +56,17 @@ def submit_search():
         if v != 0:
             search_results.append(SearchResult(k, v))
 
+    # Get search history
+    history = json.loads(request.cookies.get('history', default="{}"))
+
     # Set up response
     resp = make_response(
         render_template(
             "search_results.html",
             QUERY=query,
             RESULTS=search_results,
-            TIME_TAKEN=search_time_taken
+            TIME_TAKEN=search_time_taken,
+            HISTORY=history
         )
     )
 
