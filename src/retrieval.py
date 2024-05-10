@@ -98,6 +98,9 @@ def documentToVec(page_id:int,fromTitle:bool=False)->dict[int,int]:
     table:str = "inverted_idx"
     vector:dict[int,int] = {}
     
+    if page_id == None:
+        return vector
+    
     if fromTitle:
         table = "title_inverted_idx"
         
@@ -206,6 +209,8 @@ def queryFilter(document_id:int, query:list[int]) -> bool:
     return False
 
 def search_engine(query: str)->dict[int,float]:
+    if (query == None or query == ""):
+        return {}
     
     splitted_query:list[list[int]] = parse_string(query)
     if (len(splitted_query[0]) == 0): # incase query is something out of the db
