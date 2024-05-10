@@ -23,7 +23,7 @@ The project is based on Python, version ***3.12.0***. The project uses the follo
 - timeit, to count the running time for the query. 
 - argparse, for accepting flags for main.py
 
-Users are suggested to execute the command on a **_Unix-based_** operating system, with bash or zsh as the shell. However, the code can also be run on other operating systems, provided that users will have to run a different commands. 
+Users are suggested to run the program in macOS or Linux, with bash or zsh as the shell since the coding and tests are performed on Unix-based platform. However, they can also run the program on Windows.
 
 To run the program, users should do the following. 
 
