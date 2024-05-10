@@ -44,7 +44,7 @@ To run the program, users should do the following.
 
     (Windows)
     ```bash
-    .\.venv\Scripts\activate.bat
+    .\.venv\Scripts\activate
     ```
     
     
