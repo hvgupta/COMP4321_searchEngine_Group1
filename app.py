@@ -35,6 +35,9 @@ def submit_search():
     # or history dropdown menu
     if not query:
         query = request.form.get('history')
+    # Empty query
+    if not query:
+        query = ""
 
     # Time the search operation
     start_time: float = timeit.default_timer()
@@ -65,7 +68,7 @@ def submit_search():
 
     # Add query to search history
     history: List[str] = json.loads(request.cookies.get('history', default="[]"))
-    if query not in history:
+    if (query not in history) and (query != ""):
         history.append(query)
     resp.set_cookie("history", json.dumps(history))
 
