@@ -1,6 +1,6 @@
 # This project has been created by Group 1 for the course COMP 4321 (24S)
 
-## Project Phase 1: User manual
+## Project User manual
 
 The project is based on Python, version ***3.12.0***. The project uses the following packages:
 
