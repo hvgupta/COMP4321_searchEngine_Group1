@@ -1,6 +1,6 @@
 # This project has been created by Group 1 for the course COMP 4321 (24S)
 
-## Project Phase 1: User manual
+## Project User manual
 
 The project is based on Python, version ***3.12.0***. The project uses the following packages:
 
@@ -23,11 +23,11 @@ The project is based on Python, version ***3.12.0***. The project uses the follo
 - timeit, to count the running time for the query. 
 - argparse, for accepting flags for main.py
 
-Users are suggested to run the program in macOS or Linux, with bash or zsh as the shell since the coding and tests are performed on Unix-based platform. However, they can also run the program on Windows.
+Users are suggested to run the program in macOS or Linux, with bash or zsh as the shell since the coding and tests are performed on a Unix-based platform. However, they can also run the program on Windows.
 
 To run the program, users should do the following. 
 
-1. Users need to ensure they have installed the correct python version. Direct to the directory 
+1. Users need to ensure they have installed the correct Python version. Navigate to the directory where the code is downloaded to.
 
 2. Create a virtual environment using the following command. 
 
