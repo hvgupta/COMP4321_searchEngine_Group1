@@ -1,4 +1,4 @@
-# This project has been created by Group 1 for the course COMP 4321 (24S)
+# This project has been created by Group 1 for the course COMP 4321 (24S), by Gupta Harsh Vardhan, Kong Tsz Yui and Zhang Zhe.
 
 ## Project User manual
 
