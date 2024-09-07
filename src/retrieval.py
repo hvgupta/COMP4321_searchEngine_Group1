@@ -8,13 +8,6 @@ from collections import Counter
 from time import time
 import numpy as np
 
-
-# To Harsh:
-# The imports on the above are just for reference because they are copied from crawler.py
-# Free to add more lib.
-# Unless necessary, you are suggested not to add numpy as it may fuck up the project 😔
-# Add oil OwO QwQ
-
 ALPHA:float = 0.75 # how important is titles matching
 BETA:float = 1 - ALPHA # how important is text matching 
 MAX_RESULTS:int = 50 # max results that can be returned
@@ -290,10 +283,3 @@ for word_id,word in cursor.execute(
         SELECT word_id, word FROM word_id_word
     """).fetchall():
     globalWordtoID[word] = word_id
-
-
-# start = time()
-# results = search_engine('"UG"')
-# end = time()
-# print("time taken: ", end - start)
-# print(results)
