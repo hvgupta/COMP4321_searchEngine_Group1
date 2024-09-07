@@ -1,5 +1,11 @@
 # COMP 4321 (24S) Group 1 Group Project, by Gupta Harsh Vardhan, Kong Tsz Yui and Zhang Zhe.
 
+## What does this project do
+This project is a search engine implementation for the course "Search Engine and Enterprize Data"(COMP4321) offered by Hong Kong Univerity of Science and Technology. The project consists of three main parts: crawler, retrivel system, and the search engine website.
+- _crawler_: Focuses on parsing data textual data from the website and saving it on
+- _retrieval_: Applying the concepts of TFxIDF, Google's PageRank and Weighted Search to the user query and the parsed data, retrieve the top 50 results.
+- _website_: User friendly and easy to use way to access the search engine
+
 ## Project User manual
 
 Demo Video: [YouTube](https://www.youtube.com/watch?v=zf9KNITW1DY)
