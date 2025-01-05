@@ -1,8 +1,7 @@
 import sqlite3
 import datetime
 from pathlib import Path
-from collections import Counter, defaultdict
-from typing import Dict
+from collections import defaultdict
 
 # Connect to the documents database
 db_path = str(Path.cwd()) + '/src/files/database.db'
