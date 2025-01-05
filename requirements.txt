@@ -13,7 +13,7 @@ MarkupSafe==2.1.5
 nltk==3.9
 numpy==1.26.4
 regex==2024.4.28
-requests==2.31.0
+requests==2.32.2
 soupsieve==2.5
 tqdm==4.66.4
 urllib3==2.2.1
