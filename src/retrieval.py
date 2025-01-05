@@ -3,10 +3,8 @@ import re
 from pathlib import Path
 from math import log2
 from nltk.stem import PorterStemmer as Stemmer
-import sqlite3
 from collections import Counter
 from time import time
-import numpy as np
 
 ALPHA:float = 0.75 # how important is titles matching
 BETA:float = 1 - ALPHA # how important is text matching 

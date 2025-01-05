@@ -9,6 +9,7 @@ import re
 import asyncio
 from pathlib import Path
 
+requests.packages.urllib3.disable_warnings()
 
 regex = re.compile('[^a-zA-Z]')
 
@@ -19,7 +20,7 @@ connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
 
-async def get_soup(url: str) -> (bsoup, int, int, int):
+async def get_soup(url: str) -> tuple[bsoup, int, int, int]:
     # We will skip pdf and mailto
     if url[-3:] == "pdf" or url[0:6] == "mailto":
         return bsoup(""), 0, 0, 0

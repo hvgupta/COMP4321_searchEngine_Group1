@@ -1,5 +1,4 @@
 from flask import Flask, render_template, make_response, request
-import sqlite3
 import timeit
 from typing import List
 import json
